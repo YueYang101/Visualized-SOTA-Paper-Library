@@ -323,12 +323,22 @@ h2 { font-size: clamp(1.65rem, 2.5vw, 2.25rem); }
 .sheet-kicker { flex-wrap: wrap; gap: 7px; }
 .sheet-paper-link { width: fit-content; margin-top: 4px; padding: 7px 9px; border: 1px solid #29424d; border-radius: 9px; }
 .reading-pill { padding: 3px 8px; border: 1px solid color-mix(in srgb, var(--state) 44%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--state) 9%, transparent); color: var(--state); font-size: .66rem; font-weight: 700; }
+.paper-detail-tabs { min-height: 0; flex: 1; gap: 0; }
+.paper-detail-tabs-list { width: auto; height: 42px !important; flex: 0 0 auto; margin: 0 26px; padding: 4px; border: 1px solid rgba(94, 134, 147, .16); background: rgba(16, 35, 44, .78); }
+.paper-detail-tabs-list [data-slot='tabs-trigger'] { gap: 7px; font-size: .76rem; }
+.paper-detail-tabs-list [data-slot='tabs-trigger'][data-active] { color: #dff8f2; background: rgba(82, 224, 196, .1); }
+.qa-count { min-width: 20px; height: 20px; display: inline-grid; place-items: center; padding: 0 5px; border-radius: 999px; background: rgba(255, 255, 255, .07); color: #79969e; font-size: .63rem; }
 .sheet-scroll { min-height: 0; overflow-y: auto; padding: 0 26px 34px; }
 .detail-section { padding: 20px 0; border-bottom: 1px solid rgba(94, 134, 147, .13); }
 .detail-section p { margin: 0; color: #a7bbc0; font-size: .82rem; line-height: 1.7; }
 .detail-section .section-label { display: flex; justify-content: space-between; margin-bottom: 10px; color: #718e97; line-height: 1.2; }
 .one-minute-card { margin-top: 20px; padding: 17px 18px; border: 1px solid rgba(82, 224, 196, .18); border-radius: 15px; background: linear-gradient(135deg, rgba(82, 224, 196, .08), rgba(82, 224, 196, .025)); }
 .one-minute-card .section-label { color: #5fcdb7; }
+.ai-summary-card { margin-top: 20px; padding: 17px 18px; border: 1px solid rgba(82, 224, 196, .18); border-radius: 15px; background: linear-gradient(135deg, rgba(82, 224, 196, .08), rgba(82, 224, 196, .025)); }
+.ai-summary-card .section-label { color: #5fcdb7; }
+.ai-summary-card > strong { display: block; margin: 13px 0 7px; color: #dcebea; font-size: .88rem; line-height: 1.45; }
+.ai-summary-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ai-summary-tags [data-slot='badge'] { color: #9bd7cc; background: rgba(82, 224, 196, .05); }
 .edit-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
 .wide-select { width: 100% !important; height: 38px !important; }
 .deep-read-box { display: grid; gap: 10px; }
@@ -362,6 +372,34 @@ h2 { font-size: clamp(1.65rem, 2.5vw, 2.25rem); }
 .paper-links a { display: inline-flex; align-items: center; gap: 5px; padding: 7px 9px; border: 1px solid #29424d; border-radius: 9px; color: #8fd8cb; font-size: .72rem; text-decoration: none; }
 .paper-links a:hover { border-color: #4b8e81; background: rgba(82, 224, 196, .06); }
 .paper-links svg { width: 12px; }
+.experiment-list, .qa-list { display: grid; gap: 11px; }
+.experiment-card, .qa-card { padding: 14px 15px; border: 1px solid rgba(91, 130, 142, .19); border-radius: 13px; background: rgba(17, 37, 46, .42); }
+.experiment-card h3, .qa-card h3 { margin: 0; color: #d4e5e5; font-size: .84rem; line-height: 1.45; }
+.experiment-card dl { display: grid; gap: 8px; margin: 11px 0 0; }
+.experiment-card dl > div { display: grid; grid-template-columns: 38px 1fr; gap: 9px; }
+.experiment-card dt { color: #5fcdb7; font-size: .68rem; font-weight: 750; }
+.experiment-card dd { margin: 0; color: #91a8ae; font-size: .75rem; line-height: 1.55; }
+.detail-section .section-label svg { width: 15px; height: 15px; }
+.paper-media-grid { display: grid; gap: 12px; }
+.paper-media-card { position: relative; overflow: hidden; margin: 0; border: 1px solid rgba(91, 130, 142, .2); border-radius: 14px; background: rgba(10, 27, 35, .8); }
+.paper-media-card > [data-slot='badge'] { position: absolute; z-index: 2; top: 9px; left: 9px; background: rgba(9, 24, 32, .9); }
+.paper-media-card img, .paper-media-card video { width: 100%; max-height: 320px; display: block; object-fit: contain; background: #071219; }
+.paper-media-card figcaption { display: grid; gap: 4px; padding: 12px 14px 14px; }
+.paper-media-card figcaption strong { color: #d8e8e8; font-size: .79rem; }
+.paper-media-card figcaption span { color: #718c94; font-size: .71rem; line-height: 1.55; }
+.video-link { min-height: 150px; display: grid; place-items: center; align-content: center; gap: 8px; color: #8fd8cb; font-size: .78rem; text-decoration: none; background: radial-gradient(circle at center, rgba(82, 224, 196, .09), transparent 48%); }
+.video-link svg { width: 27px; height: 27px; }
+.qa-panel { padding-top: 20px; }
+.qa-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 9px; }
+.qa-heading > span { display: grid; place-items: center; width: 28px; height: 24px; border-radius: 8px; background: rgba(82, 224, 196, .1); color: #65d6c0; font-size: .67rem; font-weight: 800; }
+.qa-heading time { color: #58737c; font-size: .65rem; }
+.qa-card > p { margin-top: 10px; color: #9fb4b9; }
+.qa-card > small { display: block; margin-top: 10px; color: #617c85; font-size: .67rem; }
+.qa-card .paper-links { margin-top: 11px; }
+.qa-empty { min-height: 360px; display: grid; place-items: center; align-content: center; padding: 30px; text-align: center; }
+.qa-empty > svg { width: 32px; height: 32px; margin-bottom: 12px; color: #4a6972; }
+.qa-empty h3 { margin: 0; color: #cbdcde; font-size: .92rem; }
+.qa-empty p { max-width: 390px; margin-top: 9px; color: #6f8991; font-size: .76rem; line-height: 1.65; }
 .detail-loading, .detail-error { justify-content: center; gap: 9px; min-height: 105px; color: #728d96; }
 .detail-loading svg, .detail-error svg { width: 18px; }
 .detail-error { flex-wrap: wrap; color: #ff9da3; }
@@ -417,6 +455,7 @@ h2 { font-size: clamp(1.65rem, 2.5vw, 2.25rem); }
   .graph-note { padding-right: 65px; line-height: 1.45; }
   .edit-grid { grid-template-columns: 1fr; }
   .paper-sheet-header { padding-inline: 20px; }
+  .paper-detail-tabs-list { margin-inline: 20px; }
   .sheet-scroll { padding-inline: 20px; }
 }
 

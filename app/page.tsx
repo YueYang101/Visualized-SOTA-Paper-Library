@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  Bot,
   BookOpen,
   Check,
   CircleHelp,
@@ -9,11 +10,14 @@ import {
   Download,
   ExternalLink,
   FileText,
+  FlaskConical,
   GripVertical,
   List,
   LoaderCircle,
+  MessageCircle,
   Network,
   Plus,
+  Play,
   RotateCw,
   Search,
   Upload,
@@ -785,72 +789,107 @@ export default function Home() {
                 <a className="sheet-paper-link" href={selectedPaper.paperUrl} target="_blank" rel="noreferrer">直接打开论文<ExternalLink /></a>
               </SheetHeader>
 
-              <div className="sheet-scroll">
-                <section className="detail-section one-minute-card">
-                  <p className="section-label">一分钟结论</p>
-                  <p>{selectedPaper.oneMinute}</p>
-                </section>
+              <Tabs key={selectedPaper.id} defaultValue="ai" className="paper-detail-tabs">
+                <TabsList className="paper-detail-tabs-list" aria-label="论文详情内容">
+                  <TabsTrigger value="ai"><Bot />AI 预读</TabsTrigger>
+                  <TabsTrigger value="qa"><MessageCircle />Q&amp;A 记录 <span className="qa-count">{detail?.qa?.length ?? 0}</span></TabsTrigger>
+                </TabsList>
 
-                <section className="detail-section edit-grid">
-                  <div>
-                    <p className="section-label">阅读优先级</p>
-                    <Select value={selectedPaper.priority} onValueChange={(value) => updatePaper(selectedPaper.id, { priority: value as Priority })}>
-                      <SelectTrigger id="priority-select" className="wide-select"><SelectValue /></SelectTrigger>
-                      <SelectContent>{priorities.map((priority) => <SelectItem key={priority} value={priority}>{priorityLabels[priority]}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="deep-read-box">
-                    <p className="section-label">精读标签</p>
-                    <label htmlFor="deep-read-completed"><Checkbox id="deep-read-completed" checked={selectedPaper.deepRead.completed} onCheckedChange={(checked) => updatePaper(selectedPaper.id, { deepRead: { ...selectedPaper.deepRead, completed: Boolean(checked) } })} />已经精读</label>
-                    <label htmlFor="deep-read-needed"><Checkbox id="deep-read-needed" checked={selectedPaper.deepRead.needed} onCheckedChange={(checked) => updatePaper(selectedPaper.id, { deepRead: { ...selectedPaper.deepRead, needed: Boolean(checked) } })} />需要精读 / 复读</label>
-                  </div>
-                </section>
+                <TabsContent value="ai" className="sheet-scroll">
+                  <section className="detail-section ai-summary-card">
+                    <p className="section-label">AI 标签与简述</p>
+                    <div className="ai-summary-tags">{selectedPaper.tags.map((tag) => <Badge key={tag} variant="outline">{tag}</Badge>)}</div>
+                    <strong>{detail?.subtitle ?? selectedPaper.shortTitle}</strong>
+                    <p>{selectedPaper.oneMinute}</p>
+                  </section>
 
-                <section className="detail-section">
-                  <p className="section-label">所属地图（可多选）</p>
-                  <div className="category-checks">
-                    {categoryManifest.map((category) => (
-                      <label key={category.id} htmlFor={`category-${category.id}`}>
-                        <Checkbox id={`category-${category.id}`} checked={selectedPaper.categories.includes(category.id)} onCheckedChange={(checked) => togglePaperCategory(category.id, Boolean(checked))} />
-                        <span><strong>{category.label}</strong><small>{category.description}</small></span>
-                      </label>
-                    ))}
-                  </div>
-                </section>
+                  <section className="detail-section edit-grid">
+                    <div>
+                      <p className="section-label">阅读优先级</p>
+                      <Select value={selectedPaper.priority} onValueChange={(value) => updatePaper(selectedPaper.id, { priority: value as Priority })}>
+                        <SelectTrigger id="priority-select" className="wide-select"><SelectValue /></SelectTrigger>
+                        <SelectContent>{priorities.map((priority) => <SelectItem key={priority} value={priority}>{priorityLabels[priority]}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="deep-read-box">
+                      <p className="section-label">精读标签</p>
+                      <label htmlFor="deep-read-completed"><Checkbox id="deep-read-completed" checked={selectedPaper.deepRead.completed} onCheckedChange={(checked) => updatePaper(selectedPaper.id, { deepRead: { ...selectedPaper.deepRead, completed: Boolean(checked) } })} />已经精读</label>
+                      <label htmlFor="deep-read-needed"><Checkbox id="deep-read-needed" checked={selectedPaper.deepRead.needed} onCheckedChange={(checked) => updatePaper(selectedPaper.id, { deepRead: { ...selectedPaper.deepRead, needed: Boolean(checked) } })} />需要精读 / 复读</label>
+                    </div>
+                  </section>
 
-                <section className="detail-section">
-                  <p className="section-label">帮助回忆的标签 <span>{selectedPaper.tags.length}/8</span></p>
-                  <div className="editable-tags">
-                    {selectedPaper.tags.map((tag) => <button key={tag} type="button" onClick={() => removeTag(tag)} title="点击移除">{tag}<X /></button>)}
-                  </div>
-                  <div className="tag-entry">
-                    <Input aria-label="手动输入短标签" value={tagDraft} maxLength={24} placeholder="手动输入短标签" onChange={(event) => setTagDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addTag(tagDraft); } }} />
-                    <Button variant="outline" onClick={() => addTag(tagDraft)}><Plus />添加</Button>
-                  </div>
-                  {detail?.suggestedTags && detail.suggestedTags.some((tag) => !selectedPaper.tags.includes(tag)) && (
-                    <div className="suggested-tags"><span>建议：</span>{detail.suggestedTags.filter((tag) => !selectedPaper.tags.includes(tag)).map((tag) => <button key={tag} type="button" onClick={() => addTag(tag)}>+ {tag}</button>)}</div>
-                  )}
-                </section>
+                  <section className="detail-section">
+                    <p className="section-label">所属地图（可多选）</p>
+                    <div className="category-checks">
+                      {categoryManifest.map((category) => (
+                        <label key={category.id} htmlFor={`category-${category.id}`}>
+                          <Checkbox id={`category-${category.id}`} checked={selectedPaper.categories.includes(category.id)} onCheckedChange={(checked) => togglePaperCategory(category.id, Boolean(checked))} />
+                          <span><strong>{category.label}</strong><small>{category.description}</small></span>
+                        </label>
+                      ))}
+                    </div>
+                  </section>
 
-                {detailLoading ? (
-                  <section className="detail-section detail-loading"><LoaderCircle className="spin" /><span>正在按需读取完整精读卡…</span></section>
-                ) : detailError ? (
-                  <section className="detail-section detail-error"><AlertTriangle /><p>{detailError}</p><Button variant="outline" onClick={() => openPaper(selectedPaper)}>重试</Button></section>
-                ) : detail ? (
-                  <>
-                    <section className="detail-section source-note"><FileText /><p>{detail.sourceNote}</p></section>
-                    <DetailList title="核心贡献" items={detail.contributions} />
-                    <DetailList title="关键证据" items={detail.evidence} />
-                    <DetailList title="主要局限" items={detail.limitations} />
-                    <DetailList title="对当前研究的价值" items={detail.relevance} accent />
-                    <section className="detail-section"><p className="section-label">建议回看</p><p>{detail.nextReading}</p></section>
-                    <section className="detail-section">
-                      <p className="section-label">资料链接</p>
-                      <div className="paper-links">{detail.links.map((link) => <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.label}<ExternalLink /></a>)}</div>
+                  <section className="detail-section">
+                    <p className="section-label">帮助回忆的标签 <span>{selectedPaper.tags.length}/8</span></p>
+                    <div className="editable-tags">
+                      {selectedPaper.tags.map((tag) => <button key={tag} type="button" onClick={() => removeTag(tag)} title="点击移除">{tag}<X /></button>)}
+                    </div>
+                    <div className="tag-entry">
+                      <Input aria-label="手动输入短标签" value={tagDraft} maxLength={24} placeholder="手动输入短标签" onChange={(event) => setTagDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addTag(tagDraft); } }} />
+                      <Button variant="outline" onClick={() => addTag(tagDraft)}><Plus />添加</Button>
+                    </div>
+                    {detail?.suggestedTags && detail.suggestedTags.some((tag) => !selectedPaper.tags.includes(tag)) && (
+                      <div className="suggested-tags"><span>建议：</span>{detail.suggestedTags.filter((tag) => !selectedPaper.tags.includes(tag)).map((tag) => <button key={tag} type="button" onClick={() => addTag(tag)}>+ {tag}</button>)}</div>
+                    )}
+                  </section>
+
+                  {detailLoading ? (
+                    <section className="detail-section detail-loading"><LoaderCircle className="spin" /><span>正在按需读取完整精读卡…</span></section>
+                  ) : detailError ? (
+                    <section className="detail-section detail-error"><AlertTriangle /><p>{detailError}</p><Button variant="outline" onClick={() => openPaper(selectedPaper)}>重试</Button></section>
+                  ) : detail ? (
+                    <>
+                      <section className="detail-section source-note"><FileText /><p>{detail.sourceNote}</p></section>
+                      <DetailList title="核心贡献" items={detail.contributions} />
+                      {detail.experiments?.length ? <ExperimentList experiments={detail.experiments} /> : <DetailList title="具体实验与关键证据" items={detail.evidence} />}
+                      {detail.experiments?.length ? <DetailList title="补充证据" items={detail.evidence} /> : null}
+                      <DetailList title="主要局限" items={detail.limitations} />
+                      <DetailList title="对当前研究的价值" items={detail.relevance} accent />
+                      {detail.media?.length ? <MediaGallery media={detail.media} /> : null}
+                      <section className="detail-section"><p className="section-label">建议回看</p><p>{detail.nextReading}</p></section>
+                      <section className="detail-section">
+                        <p className="section-label">资料链接</p>
+                        <div className="paper-links">{detail.links.map((link) => <a key={link.url} href={link.url} target="_blank" rel="noreferrer">{link.label}<ExternalLink /></a>)}</div>
+                      </section>
+                    </>
+                  ) : null}
+                </TabsContent>
+
+                <TabsContent value="qa" className="sheet-scroll qa-panel">
+                  {detailLoading ? (
+                    <section className="detail-section detail-loading"><LoaderCircle className="spin" /><span>正在读取问答记录…</span></section>
+                  ) : detailError ? (
+                    <section className="detail-section detail-error"><AlertTriangle /><p>{detailError}</p><Button variant="outline" onClick={() => openPaper(selectedPaper)}>重试</Button></section>
+                  ) : detail?.qa?.length ? (
+                    <div className="qa-list">{detail.qa.map((item, index) => (
+                      <article key={item.id} className="qa-card" id={`${selectedPaper.id}-${item.id}`}>
+                        <div className="qa-heading"><span>Q{index + 1}</span>{item.updatedAt && <time>{item.updatedAt}</time>}</div>
+                        <h3>{item.question}</h3>
+                        <p>{item.answer}</p>
+                        {item.relatedQaIds?.length ? <small>关联问答：{item.relatedQaIds.join('、')}</small> : null}
+                        {item.sources?.length ? <div className="paper-links">{item.sources.map((link) => <a key={`${item.id}-${link.url}`} href={link.url} target="_blank" rel="noreferrer">{link.label}<ExternalLink /></a>)}</div> : null}
+                      </article>
+                    ))}</div>
+                  ) : (
+                    <section className="qa-empty">
+                      <MessageCircle />
+                      <h3>还没有问答记录</h3>
+                      <p>以后针对这篇论文继续提问时，维护 Agent 会先查找旧问题：相同问题直接引用旧回答；有新证据时补充原回答，并把可复用结论同步回完整知识卡。</p>
                     </section>
-                  </>
-                ) : null}
-              </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             </>
           )}
         </SheetContent>
@@ -864,6 +903,47 @@ function DetailList({ title, items, accent = false }: { title: string; items: st
     <section className={`detail-section ${accent ? 'accent-section' : ''}`}>
       <p className="section-label">{title}</p>
       <ul>{items.map((item) => <li key={item}>{item}</li>)}</ul>
+    </section>
+  );
+}
+
+function ExperimentList({ experiments }: { experiments: NonNullable<PaperDetail['experiments']> }) {
+  return (
+    <section className="detail-section">
+      <p className="section-label"><span>具体实验</span><FlaskConical /></p>
+      <div className="experiment-list">{experiments.map((experiment) => (
+        <article key={experiment.title} className="experiment-card">
+          <h3>{experiment.title}</h3>
+          <dl>
+            <div><dt>设置</dt><dd>{experiment.setup}</dd></div>
+            <div><dt>结果</dt><dd>{experiment.result}</dd></div>
+            {experiment.takeaway && <div><dt>结论</dt><dd>{experiment.takeaway}</dd></div>}
+            {experiment.source && <div><dt>位置</dt><dd>{experiment.source}</dd></div>}
+          </dl>
+        </article>
+      ))}</div>
+    </section>
+  );
+}
+
+function MediaGallery({ media }: { media: NonNullable<PaperDetail['media']> }) {
+  const roleLabels = { architecture: '模型架构', experiment: '实验图', demo: '演示' } as const;
+  return (
+    <section className="detail-section">
+      <p className="section-label">图片、视频与模型架构</p>
+      <div className="paper-media-grid">{media.map((item) => (
+        <figure key={`${item.type}-${item.url}`} className="paper-media-card">
+          <Badge variant="outline">{roleLabels[item.role]}</Badge>
+          {item.type === 'image' ? (
+            <a href={item.sourceUrl ?? item.url} target="_blank" rel="noreferrer"><img src={item.url} alt={item.alt ?? item.title} loading="lazy" /></a>
+          ) : item.direct ? (
+            <video controls preload="metadata" poster={item.posterUrl}><source src={item.url} /></video>
+          ) : (
+            <a className="video-link" href={item.url} target="_blank" rel="noreferrer"><Play />打开作者视频</a>
+          )}
+          <figcaption><strong>{item.title}</strong><span>{item.caption}</span></figcaption>
+        </figure>
+      ))}</div>
     </section>
   );
 }

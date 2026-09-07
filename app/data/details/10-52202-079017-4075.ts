@@ -15,6 +15,22 @@ export const detail: PaperDetail = {
     'IDA 超时率 0.1%，持续 copilot 为 13.8%，选择性介入减少了“安全但不完成目标”。',
     '主观易用、可控和自主性评分也优于持续 copilot（p<0.01）。',
   ],
+  experiments: [
+    {
+      title: '人类 Lunar Lander 目标选择实验',
+      setup: '8 名无经验参与者，每人 270 次试验；比较用户单独、持续扩散 copilot 与 IDA，考察成功、超时及主观体验。',
+      result: '成功率分别为 14.0%、68.2% 与 91.7%；IDA 相对两个对照的提升均达到 p<0.01，超时率仅 0.1%，持续 copilot 为 13.8%。',
+      takeaway: '只在 copilot 对所有可能目标都更优时介入，比持续辅助更能同时保留目标自主性并完成任务。',
+      source: 'Tables 2–3、Figs. 3–4、Appendix C–D',
+    },
+    {
+      title: '主观可控性与自主性感受',
+      setup: '同一人类实验后比较不同辅助方式的易用、可控和自主性评分。',
+      result: 'IDA 的主观评分优于持续 copilot，论文报告差异达到 p<0.01。',
+      takeaway: '动态二元仲裁不仅提高任务结果，也缓解持续 copilot 对用户控制感的侵蚀。',
+      source: 'Table 3、Appendix D',
+    },
+  ],
   limitations: [
     '需要可查询状态—动作价值的专家策略，真实灵巧操作中不一定容易获得。',
     '仲裁是硬二元切换，接触瞬间可能需要额外平滑或滞回。',
