@@ -3,8 +3,7 @@ import type { PaperIndex } from '../types';
 export const papers: PaperIndex[] = [
   {
     id: 'robustdexgrasp-2504-05287',
-    title:
-      'RobustDexGrasp: Robust Dexterous Grasping of General Objects from Single-view Perception',
+    title: 'RobustDexGrasp: Robust Dexterous Grasping of General Objects',
     shortTitle: 'RobustDexGrasp',
     paperUrl: 'https://arxiv.org/abs/2504.05287',
     authors: [
@@ -22,6 +21,21 @@ export const papers: PaperIndex[] = [
     tags: ['局部几何', '伪触觉', '特权教师', 'IL→PPO', '动态抓取'],
     oneMinute:
       '用 17 个手部关键点到最近物体表面的三维位移构成 51D 局部几何，再通过“特权视觉/触觉教师—无触觉 LSTM 学生—从模仿逐渐过渡到 PPO”，实现单深度相机下的闭环灵巧抓取与受扰恢复。最值得借鉴的是局部表示、伪触觉和训练结构，而非共享控制本身。',
+  },
+  {
+    id: 'grasp-to-act-2602-20466',
+    title: 'Grasp to Act: Dexterous Grasping for Tool Use in Dynamic Settings',
+    shortTitle: 'Grasp-to-Act',
+    paperUrl: 'https://arxiv.org/abs/2602.20466',
+    authors: ['Harsh Gupta', 'Mohammad Amin Mirzaee', 'Wenzhen Yuan'],
+    year: 2026,
+    venue: 'IEEE RA-L 2026',
+    categories: ['robust-grasp'],
+    priority: 'high',
+    deepRead: { completed: false, needed: true },
+    tags: ['动态工具使用', '抗扰抓取', '手指残差控制', '示范轨迹'],
+    oneMinute:
+      '面向锤击、锯切等动态工具使用，G2A 先由单段人类 RGB-D 示范限定功能抓取与腕轨迹，仿真筛出抗多轴力矩抓姿，再以本体感知手指 residual 在线抑制滑移。最值得借鉴的是“稳定初始抓姿+独立手指稳定器”，但腕部仍开环回放且策略逐任务训练，尚未证明可接入任意在线人控或迁移到 L20。',
   },
   {
     id: 'clutterdexgrasp-2506-14317',

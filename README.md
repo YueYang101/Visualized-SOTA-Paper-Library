@@ -10,11 +10,11 @@
 
 ## 当前内容
 
-目前共收录 **24 篇**论文：3 篇已有精读记录，21 篇为 2026-09 按当前研究方向筛选的 SOTA / 强基线预读，后者统一标为“待精读”。“SOTA”是随时间变化的筛选判断，不代表永久排名。
+目前共收录 **25 篇**论文：3 篇已有精读记录，22 篇为 2026-09 按当前研究方向筛选的 SOTA / 强基线预读，后者统一标为“待精读”。“SOTA”是随时间变化的筛选判断，不代表永久排名。
 
 已有精读记录：
 
-- **RobustDexGrasp: Robust Dexterous Grasping of General Objects from Single-view Perception**
+- **RobustDexGrasp: Robust Dexterous Grasping of General Objects**
 - 分类：Robust Grasp
 - 优先级：高
 - 状态：已精读，当前不需要复读
@@ -26,7 +26,7 @@
 
 本轮 SOTA / 强基线预读：
 
-- **Robust Grasp**：ClutterDexGrasp、Shear-based Grasp Control、TacDexGrasp、Shared Bionic Hand、DexGraspNet、UniDexGrasp++、GenDexGrasp、D(R,O) Grasp、CrossDex、AnyDexGrasp、GraspXL、DexGrasp-Zero、DexGraspNet 2.0
+- **Robust Grasp**：Grasp-to-Act、ClutterDexGrasp、Shear-based Grasp Control、TacDexGrasp、Shared Bionic Hand、DexGraspNet、UniDexGrasp++、GenDexGrasp、D(R,O) Grasp、CrossDex、AnyDexGrasp、GraspXL、DexGrasp-Zero、DexGraspNet 2.0
 - **Share Control**：To the Noise and Back、IDA、FlashBack、VOSA、Shared Bionic Hand、TeleDexter
 - **Retarget & Teleop**：AnyDexRT、TeleDexter、DexUMI、Bunny-VisionPro、CrossDex、DexGrasp-Zero
 
@@ -42,6 +42,7 @@
 - **真机少样本适配**：AnyDexGrasp 对三款已支持手的真实杂乱抓取最实用，每手用 400–1000 次试抓训练决策器；它不是零样本，且共享表示本身依赖十亿级离线 CGR 标注。
 - **杂乱场景直接候选器**：DexGraspNet 2.0 已公开 LEAP 数据与权重，适合直接作为静态抓姿候选器；ClutterDexGrasp 则是目标条件闭环策略。两者任务不同，90.7% 与 83.9% 不能直接比较。
 - **抓后稳定**：Shear-based Control、TacDexGrasp 和 Shared Bionic Hand 更接近可插入系统的低层稳定器；它们不负责开放世界抓姿生成，但对共享控制和真实鲁棒性更直接。
+- **动态工具使用**：Grasp-to-Act 以抗多轴力矩的初始抓姿加手指 residual 抵抗锤击、锯切等外力，是“人控腕+自主手指稳定”的近邻结构；但其腕部仍开环回放单段示范，策略逐任务训练且只验证 LEAP，不等于任意在线人控共享策略或 L20 即插即用控制器。
 
 “先训练专家/特权教师再蒸馏”确实是动态策略的重要主线，因为仿真训练能看到完整物体、接触和力，而部署只能看到点云、本体或触觉历史。UniDexGrasp++、CrossDex、RobustDexGrasp、ClutterDexGrasp、DexGrasp-Zero 都属于这一族；但它不是全领域唯一方案。DexGraspNet 用可微优化产数据，GenDexGrasp/D(R,O) Grasp 用手无关交互表示加运动学恢复，DexGraspNet 2.0 用条件扩散生成静态抓姿，AnyDexGrasp 用共享几何表示加每手真机分类器，均没有策略教师—学生蒸馏。
 
@@ -49,6 +50,7 @@
 
 | 论文/资产       | 现在可直接复用的部分                        | 换成一只新手时                           |
 | --------------- | ------------------------------------------- | ---------------------------------------- |
+| Grasp-to-Act    | 初始抓姿抗扰评分、腕/指分层 residual 思路   | 需重建动作映射与逐任务训练；无代码       |
 | DexGraspNet     | ShadowHand 数据、合成与验证代码             | 需重做手模型与批量生成；不是策略         |
 | UniDexGrasp++   | state-based 训练代码/权重、课程与蒸馏框架   | 仅 Shadow Hand，需重建环境与视觉学生     |
 | GenDexGrasp     | MultiDex、接触图模型、五手仿真流程          | 需 URDF、网格、接触区和代码适配          |

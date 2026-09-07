@@ -10,6 +10,8 @@ const categoryLoaders: Record<CategoryId, () => Promise<PaperIndex[]>> = {
 };
 
 const detailLoaders: Record<string, () => Promise<PaperDetail>> = {
+  'grasp-to-act-2602-20466': () =>
+    import('./details/grasp-to-act-2602-20466').then((module) => module.detail),
   'robustdexgrasp-2504-05287': () =>
     import('./details/robustdexgrasp-2504-05287').then(
       (module) => module.detail,

@@ -6,7 +6,7 @@ export const categoryManifest: CategoryManifestItem[] = [
     label: 'Robust Grasp',
     shortLabel: 'RG',
     description: '抗扰动、闭环反馈与泛化抓取',
-    count: 14,
+    count: 15,
   },
   {
     id: 'shared-control',
