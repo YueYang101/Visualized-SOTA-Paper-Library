@@ -10,7 +10,7 @@
 
 ## 当前内容
 
-目前共收录 **15 篇**论文：3 篇已有精读记录，12 篇为 2026-09 按当前研究方向筛选的 SOTA / 强基线预读，后者统一标为“待精读”。“SOTA”是随时间变化的筛选判断，不代表永久排名。
+目前共收录 **24 篇**论文：3 篇已有精读记录，21 篇为 2026-09 按当前研究方向筛选的 SOTA / 强基线预读，后者统一标为“待精读”。“SOTA”是随时间变化的筛选判断，不代表永久排名。
 
 已有精读记录：
 
@@ -26,11 +26,38 @@
 
 本轮 SOTA / 强基线预读：
 
-- **Robust Grasp**：ClutterDexGrasp、Shear-based Grasp Control、TacDexGrasp、Shared Bionic Hand
+- **Robust Grasp**：ClutterDexGrasp、Shear-based Grasp Control、TacDexGrasp、Shared Bionic Hand、DexGraspNet、UniDexGrasp++、GenDexGrasp、D(R,O) Grasp、CrossDex、AnyDexGrasp、GraspXL、DexGrasp-Zero、DexGraspNet 2.0
 - **Share Control**：To the Noise and Back、IDA、FlashBack、VOSA、Shared Bionic Hand、TeleDexter
-- **Retarget & Teleop**：AnyDexRT、TeleDexter、DexUMI、Bunny-VisionPro
+- **Retarget & Teleop**：AnyDexRT、TeleDexter、DexUMI、Bunny-VisionPro、CrossDex、DexGrasp-Zero
 
-其中 Shared Bionic Hand 同属 Robust Grasp 与 Share Control；TeleDexter 同属 Share Control 与 Retarget & Teleop。多分类只重复轻量索引，完整详情仍只有一份。
+其中 Shared Bionic Hand 同属 Robust Grasp 与 Share Control；TeleDexter 同属 Share Control 与 Retarget & Teleop；CrossDex、DexGrasp-Zero 同属 Robust Grasp 与 Retarget & Teleop。多分类只重复轻量索引，完整详情仍只有一份。
+
+## Robust Grasp 当前格局（2026-09）
+
+这个方向没有一个可以跨任务直接比较的统一 SOTA。静态抓姿生成、动态闭环抓取、杂乱场景、抓后抗扰和跨本体零样本使用不同输入、手型、成功标准与真实实验设置，论文成功率不能直接排成一张总榜。
+
+- **社区常用基础资产**：DexGraspNet 是常用离线抓取数据/合成基线；UniDexGrasp++ 是跨物体状态教师—视觉学生训练范式的重要基线；GraspXL 是大规模动态抓取运动与 RaiSim 策略底座；GenDexGrasp/MultiDex 是跨手接触表示的早期常用入口。
+- **静态跨本体生成**：D(R,O) Grasp 的代码、三手统一权重和数据最完整，支持手可直接复现实验；GenDexGrasp 更经典但优化较慢。两者接入全新手都需要 URDF/网格、手型配置甚至新抓取数据，不是即插即用。
+- **跨本体闭环策略**：CrossDex 建立了统一 eigengrasp 与关键点观测基线，但未见手视觉成功率仅 35.2%，且仍需新手重定向器。DexGrasp-Zero 报告未见手仿真 85%、三种真机平均 82%，是目前最强的同类证据之一；但仓库很新，主要只公开仿真教师权重，不能当作开箱即用真机系统。
+- **真机少样本适配**：AnyDexGrasp 对三款已支持手的真实杂乱抓取最实用，每手用 400–1000 次试抓训练决策器；它不是零样本，且共享表示本身依赖十亿级离线 CGR 标注。
+- **杂乱场景直接候选器**：DexGraspNet 2.0 已公开 LEAP 数据与权重，适合直接作为静态抓姿候选器；ClutterDexGrasp 则是目标条件闭环策略。两者任务不同，90.7% 与 83.9% 不能直接比较。
+- **抓后稳定**：Shear-based Control、TacDexGrasp 和 Shared Bionic Hand 更接近可插入系统的低层稳定器；它们不负责开放世界抓姿生成，但对共享控制和真实鲁棒性更直接。
+
+“先训练专家/特权教师再蒸馏”确实是动态策略的重要主线，因为仿真训练能看到完整物体、接触和力，而部署只能看到点云、本体或触觉历史。UniDexGrasp++、CrossDex、RobustDexGrasp、ClutterDexGrasp、DexGrasp-Zero 都属于这一族；但它不是全领域唯一方案。DexGraspNet 用可微优化产数据，GenDexGrasp/D(R,O) Grasp 用手无关交互表示加运动学恢复，DexGraspNet 2.0 用条件扩散生成静态抓姿，AnyDexGrasp 用共享几何表示加每手真机分类器，均没有策略教师—学生蒸馏。
+
+### 直接复用判断
+
+| 论文/资产       | 现在可直接复用的部分                        | 换成一只新手时                           |
+| --------------- | ------------------------------------------- | ---------------------------------------- |
+| DexGraspNet     | ShadowHand 数据、合成与验证代码             | 需重做手模型与批量生成；不是策略         |
+| UniDexGrasp++   | state-based 训练代码/权重、课程与蒸馏框架   | 仅 Shadow Hand，需重建环境与视觉学生     |
+| GenDexGrasp     | MultiDex、接触图模型、五手仿真流程          | 需 URDF、网格、接触区和代码适配          |
+| D(R,O) Grasp    | Barrett/Allegro/Shadow 的统一权重与仿真流程 | 需新抓取数据和重新训练                   |
+| CrossDex        | RL、DAgger、随机化与重定向训练框架          | 需专用重定向器；无官方 checkpoint/真机栈 |
+| AnyDexGrasp     | DH-3/Allegro/Inspire 的采集、训练和执行骨架 | 需定义抓型并收集每抓型约 100 次真机试抓  |
+| GraspXL         | RaiSim 代码、预训练模型、50 万物体运动数据  | 可做仿真底座；无真机感知策略             |
+| DexGrasp-Zero   | 未见手仿真权重、评测入口、新手接入 SOP      | 仍需大量 URDF/C++ 配置；实机学生未公开   |
+| DexGraspNet 2.0 | LEAP 静态抓姿模型、数据与推理代码           | 无跨手能力，需自行接感知、规划与控制     |
 
 论文资料：[arXiv](https://arxiv.org/abs/2504.05287) · [项目页](https://zdchan.github.io/Robust_DexGrasp/) · [代码](https://github.com/zdchan/RobustDexGrasp)
 
@@ -65,12 +92,12 @@
 
 两个标签可以组合：
 
-| 颜色 | 图标 | 含义 |
-| --- | --- | --- |
-| 绿色 | ✓ | 已精读，当前不需复读 |
-| 紫色 | ↻ | 已精读，但仍需复读 |
-| 橙色 | ! | 尚未精读，需要精读 |
-| 灰色 | ? | 是否精读尚未判断 |
+| 颜色 | 图标 | 含义                 |
+| ---- | ---- | -------------------- |
+| 绿色 | ✓    | 已精读，当前不需复读 |
+| 紫色 | ↻    | 已精读，但仍需复读   |
+| 橙色 | !    | 尚未精读，需要精读   |
+| 灰色 | ?    | 是否精读尚未判断     |
 
 颜色不是唯一提示，图标和文字会同时出现。
 

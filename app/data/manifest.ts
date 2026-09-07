@@ -6,7 +6,7 @@ export const categoryManifest: CategoryManifestItem[] = [
     label: 'Robust Grasp',
     shortLabel: 'RG',
     description: '抗扰动、闭环反馈与泛化抓取',
-    count: 5,
+    count: 14,
   },
   {
     id: 'shared-control',
@@ -20,6 +20,6 @@ export const categoryManifest: CategoryManifestItem[] = [
     label: 'Retarget & Teleop',
     shortLabel: 'RT',
     description: '动作重定向、遥操作与具身映射',
-    count: 6,
+    count: 8,
   },
 ];

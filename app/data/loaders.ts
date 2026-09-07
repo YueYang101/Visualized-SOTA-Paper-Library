@@ -1,32 +1,49 @@
 import type { CategoryId, PaperDetail, PaperIndex } from './types';
 
 const categoryLoaders: Record<CategoryId, () => Promise<PaperIndex[]>> = {
-  'robust-grasp': () => import('./categories/robust-grasp').then((module) => module.papers),
-  'shared-control': () => import('./categories/shared-control').then((module) => module.papers),
-  'retarget-teleop': () => import('./categories/retarget-teleop').then((module) => module.papers),
+  'robust-grasp': () =>
+    import('./categories/robust-grasp').then((module) => module.papers),
+  'shared-control': () =>
+    import('./categories/shared-control').then((module) => module.papers),
+  'retarget-teleop': () =>
+    import('./categories/retarget-teleop').then((module) => module.papers),
 };
 
 const detailLoaders: Record<string, () => Promise<PaperDetail>> = {
   'robustdexgrasp-2504-05287': () =>
-    import('./details/robustdexgrasp-2504-05287').then((module) => module.detail),
+    import('./details/robustdexgrasp-2504-05287').then(
+      (module) => module.detail,
+    ),
   'dex-vla-shared-autonomy-2511-00139': () =>
-    import('./details/dex-vla-shared-autonomy-2511-00139').then((module) => module.detail),
+    import('./details/dex-vla-shared-autonomy-2511-00139').then(
+      (module) => module.detail,
+    ),
   'anyteleop-2307-04577': () =>
     import('./details/anyteleop-2307-04577').then((module) => module.detail),
   'clutterdexgrasp-2506-14317': () =>
-    import('./details/clutterdexgrasp-2506-14317').then((module) => module.detail),
+    import('./details/clutterdexgrasp-2506-14317').then(
+      (module) => module.detail,
+    ),
   'shear-grasp-control-2503-17501': () =>
-    import('./details/shear-grasp-control-2503-17501').then((module) => module.detail),
+    import('./details/shear-grasp-control-2503-17501').then(
+      (module) => module.detail,
+    ),
   'tacdexgrasp-2603-07040': () =>
     import('./details/tacdexgrasp-2603-07040').then((module) => module.detail),
   'shared-bionic-hand-10-1038-s41467-025-65965-9': () =>
-    import('./details/shared-bionic-hand-10-1038-s41467-025-65965-9').then((module) => module.detail),
+    import('./details/shared-bionic-hand-10-1038-s41467-025-65965-9').then(
+      (module) => module.detail,
+    ),
   '10-15607-rss-2023-xix-014': () =>
-    import('./details/10-15607-rss-2023-xix-014').then((module) => module.detail),
+    import('./details/10-15607-rss-2023-xix-014').then(
+      (module) => module.detail,
+    ),
   '10-52202-079017-4075': () =>
     import('./details/10-52202-079017-4075').then((module) => module.detail),
   'flashback-pmlr-v305-sun25a': () =>
-    import('./details/flashback-pmlr-v305-sun25a').then((module) => module.detail),
+    import('./details/flashback-pmlr-v305-sun25a').then(
+      (module) => module.detail,
+    ),
   'vosa-2501-08389': () =>
     import('./details/vosa-2501-08389').then((module) => module.detail),
   'anydexrt-2607-08341': () =>
@@ -36,7 +53,31 @@ const detailLoaders: Record<string, () => Promise<PaperDetail>> = {
   'dexumi-2505-21864': () =>
     import('./details/dexumi-2505-21864').then((module) => module.detail),
   'bunny-visionpro-2407-03162': () =>
-    import('./details/bunny-visionpro-2407-03162').then((module) => module.detail),
+    import('./details/bunny-visionpro-2407-03162').then(
+      (module) => module.detail,
+    ),
+  'dexgraspnet-2210-02697': () =>
+    import('./details/dexgraspnet-2210-02697').then((module) => module.detail),
+  'unidexgrasp-plusplus-2304-00464': () =>
+    import('./details/unidexgrasp-plusplus-2304-00464').then(
+      (module) => module.detail,
+    ),
+  'gendexgrasp-2210-00722': () =>
+    import('./details/gendexgrasp-2210-00722').then((module) => module.detail),
+  'dro-grasp-2410-01702': () =>
+    import('./details/dro-grasp-2410-01702').then((module) => module.detail),
+  'crossdex-2410-02479': () =>
+    import('./details/crossdex-2410-02479').then((module) => module.detail),
+  'anydexgrasp-2502-16420': () =>
+    import('./details/anydexgrasp-2502-16420').then((module) => module.detail),
+  'graspxl-2403-19649': () =>
+    import('./details/graspxl-2403-19649').then((module) => module.detail),
+  'dexgrasp-zero-2603-16806': () =>
+    import('./details/dexgrasp-zero-2603-16806').then(
+      (module) => module.detail,
+    ),
+  'dexgraspnet2-2410-23004': () =>
+    import('./details/dexgraspnet2-2410-23004').then((module) => module.detail),
 };
 
 export function loadCategory(id: CategoryId) {
