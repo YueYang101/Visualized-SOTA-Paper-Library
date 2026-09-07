@@ -120,13 +120,40 @@ function hashText(value: string) {
   return Math.abs(hash >>> 0);
 }
 
-function positionPaper(paper: PaperIndex, index: number, zoom: number) {
-  const angle = ((hashText(paper.id) % 360) + index * 137.508) * (Math.PI / 180);
-  const radius = priorityRadius[paper.priority] * zoom;
-  return {
-    x: 50 + Math.cos(angle) * radius,
-    y: 49 + Math.sin(angle) * radius * 0.72,
+function positionPapers(papers: PaperIndex[], zoom: number) {
+  const positions: Record<string, { x: number; y: number }> = {};
+  const capacityByPriority: Record<Priority, number> = {
+    'very-high': 6,
+    high: 10,
+    medium: 14,
+    low: 18,
   };
+
+  priorities.forEach((priority, priorityIndex) => {
+    const group = papers
+      .filter((paper) => paper.priority === priority)
+      .sort((left, right) => hashText(left.id) - hashText(right.id));
+    const capacity = capacityByPriority[priority];
+    const ringCount = Math.max(1, Math.ceil(group.length / capacity));
+    const phase = (-90 + priorityIndex * 43) * (Math.PI / 180);
+
+    group.forEach((paper, index) => {
+      const ringIndex = Math.floor(index / capacity);
+      const firstIndex = ringIndex * capacity;
+      const papersOnRing = Math.min(capacity, group.length - firstIndex);
+      const indexOnRing = index - firstIndex;
+      const stagger = ringIndex % 2 === 0 ? 0 : Math.PI / Math.max(1, papersOnRing);
+      const angle = phase + stagger + (indexOnRing * Math.PI * 2) / Math.max(1, papersOnRing);
+      const ringOffset = (ringIndex - (ringCount - 1) / 2) * 3;
+      const radius = (priorityRadius[priority] + ringOffset) * zoom;
+      positions[paper.id] = {
+        x: 50 + Math.cos(angle) * radius,
+        y: 49 + Math.sin(angle) * radius * 0.72,
+      };
+    });
+  });
+
+  return positions;
 }
 
 function isCategoryId(value: unknown): value is CategoryId {
@@ -150,6 +177,8 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<ViewMode>('graph');
   const [renderLimit, setRenderLimit] = useState(150);
   const [zoom, setZoom] = useState(1);
+  const [hoveredPaperId, setHoveredPaperId] = useState<string | null>(null);
+  const [focusedPaperId, setFocusedPaperId] = useState<string | null>(null);
   const [draggedPaperId, setDraggedPaperId] = useState<string | null>(null);
   const [dropCategory, setDropCategory] = useState<CategoryId | null>(null);
   const [selectedPaperId, setSelectedPaperId] = useState<string | null>(null);
@@ -257,8 +286,9 @@ export default function Home() {
   }, [activeCategory, mergedPapers, priorityFilter, query, readingFilter]);
 
   const visiblePapers = filteredPapers.slice(0, renderLimit);
+  const emphasizedPaperId = hoveredPaperId ?? focusedPaperId;
   const nodePositions = useMemo(
-    () => Object.fromEntries(visiblePapers.map((paper, index) => [paper.id, positionPaper(paper, index, zoom)])),
+    () => positionPapers(visiblePapers, zoom),
     [visiblePapers, zoom],
   );
 
@@ -653,7 +683,7 @@ export default function Home() {
                   <span>{Math.round(zoom * 100)}%</span>
                   <Button size="icon-sm" variant="ghost" onClick={() => setZoom((value) => Math.min(1.15, Number((value + .1).toFixed(2))))} aria-label="放大节点间距"><ZoomIn /></Button>
                 </div>
-                <div className="graph-space">
+                <div className={`graph-space${emphasizedPaperId ? ' is-emphasizing' : ''}`}>
                   <div className="orbit orbit-very-high" style={{ scale: zoom }}><span>极高</span></div>
                   <div className="orbit orbit-high" style={{ scale: zoom }}><span>高</span></div>
                   <div className="orbit orbit-medium" style={{ scale: zoom }}><span>中</span></div>
@@ -662,7 +692,8 @@ export default function Home() {
                     {edges.map((edge) => {
                       const from = nodePositions[edge.from];
                       const to = nodePositions[edge.to];
-                      return <line key={`${edge.from}-${edge.to}`} x1={`${from.x}%`} y1={`${from.y}%`} x2={`${to.x}%`} y2={`${to.y}%`} opacity={Math.min(.5, .12 + edge.strength * .08)} />;
+                      const isRelated = emphasizedPaperId === edge.from || emphasizedPaperId === edge.to;
+                      return <line key={`${edge.from}-${edge.to}`} className={emphasizedPaperId ? (isRelated ? 'is-highlighted' : 'is-dimmed') : ''} x1={`${from.x}%`} y1={`${from.y}%`} x2={`${to.x}%`} y2={`${to.y}%`} opacity={Math.min(.5, .12 + edge.strength * .08)} />;
                     })}
                   </svg>
                   {visiblePapers.map((paper) => {
@@ -676,9 +707,13 @@ export default function Home() {
                             <button
                               type="button"
                               draggable
-                              className={`paper-node state-${reading.key}`}
+                              className={`paper-node state-${reading.key}${emphasizedPaperId === paper.id ? ' is-highlighted' : ''}${emphasizedPaperId && emphasizedPaperId !== paper.id ? ' is-dimmed' : ''}${position.x > 70 ? ' label-left' : ''}`}
                               style={{ left: `${position.x}%`, top: `${position.y}%`, '--node-size': `${size}px` } as CSSProperties}
                               aria-label={`打开 ${paper.shortTitle}：${priorityLabels[paper.priority]}优先级，${reading.label}`}
+                              onMouseEnter={() => setHoveredPaperId(paper.id)}
+                              onMouseLeave={() => setHoveredPaperId((current) => current === paper.id ? null : current)}
+                              onFocus={() => setFocusedPaperId(paper.id)}
+                              onBlur={() => setFocusedPaperId((current) => current === paper.id ? null : current)}
                               onClick={() => {
                                 if (!draggedPaperId) openPaper(paper);
                               }}
@@ -709,7 +744,7 @@ export default function Home() {
                     );
                   })}
                 </div>
-                <div className="graph-note">拖动节点到左侧分类可增加第二归属 · 点大小代表优先级 · ＋／－ 调整节点间距 · 连线代表共享标签</div>
+                <div className="graph-note">同级论文沿环均匀排布 · 悬停突出当前论文与相关连线 · ＋／－ 调整节点间距</div>
                 {filteredPapers.length > renderLimit && <Button className="load-more" variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
               </div>
             ) : (
