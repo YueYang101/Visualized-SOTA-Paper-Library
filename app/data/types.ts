@@ -76,6 +76,7 @@ export interface PaperDetail {
   experiments?: PaperExperiment[];
   media?: PaperMedia[];
   qa?: PaperQuestionAnswer[];
+  humanSummary?: string[];
 }
 
 export interface CategoryManifestItem {

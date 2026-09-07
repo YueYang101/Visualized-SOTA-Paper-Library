@@ -793,6 +793,7 @@ export default function Home() {
                 <TabsList className="paper-detail-tabs-list" aria-label="论文详情内容">
                   <TabsTrigger value="ai"><Bot />AI 预读</TabsTrigger>
                   <TabsTrigger value="qa"><MessageCircle />Q&amp;A 记录 <span className="qa-count">{detail?.qa?.length ?? 0}</span></TabsTrigger>
+                  {detail?.humanSummary?.length ? <TabsTrigger value="human-summary"><FileText />人为总结</TabsTrigger> : null}
                 </TabsList>
 
                 <TabsContent value="ai" className="sheet-scroll">
@@ -889,6 +890,18 @@ export default function Home() {
                     </section>
                   )}
                 </TabsContent>
+
+                {detail?.humanSummary?.length ? (
+                  <TabsContent value="human-summary" className="sheet-scroll human-summary-panel">
+                    <section className="human-summary-card">
+                      <div className="human-summary-heading">
+                        <p className="section-label">研究者判断</p>
+                        <Badge variant="outline">人为总结 · 非论文原文</Badge>
+                      </div>
+                      <ul>{detail.humanSummary.map((item) => <li key={item}>{item}</li>)}</ul>
+                    </section>
+                  </TabsContent>
+                ) : null}
               </Tabs>
             </>
           )}
