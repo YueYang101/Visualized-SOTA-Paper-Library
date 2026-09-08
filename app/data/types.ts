@@ -7,6 +7,17 @@ export const categoryIds = [
 export type CategoryId = (typeof categoryIds)[number];
 export type Priority = 'very-high' | 'high' | 'medium' | 'low';
 
+export const graspTopicIds = [
+  'pose-contact-synthesis',
+  'task-language-conditioned',
+  'cross-embodiment',
+  'scene-level-grasping',
+  'closed-loop-acquisition',
+  'post-grasp-stabilization',
+] as const;
+
+export type GraspTopicId = (typeof graspTopicIds)[number];
+
 export interface DeepReadState {
   completed: boolean;
   needed: boolean;
@@ -21,6 +32,7 @@ export interface PaperIndex {
   year: number;
   venue: string;
   categories: CategoryId[];
+  graspTopics?: GraspTopicId[];
   priority: Priority;
   deepRead: DeepReadState;
   tags: string[];
@@ -87,9 +99,16 @@ export interface CategoryManifestItem {
   count: number;
 }
 
+export interface GraspTopicManifestItem {
+  id: GraspTopicId;
+  label: string;
+  shortLabel: string;
+  description: string;
+}
+
 export interface PaperOverride {
   original: PaperIndex;
-  changes: Partial<Pick<PaperIndex, 'categories' | 'priority' | 'deepRead' | 'tags'>>;
+  changes: Partial<Pick<PaperIndex, 'categories' | 'graspTopics' | 'priority' | 'deepRead' | 'tags'>>;
   updatedAt: string;
 }
 

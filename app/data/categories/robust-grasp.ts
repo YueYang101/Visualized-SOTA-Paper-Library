@@ -16,6 +16,7 @@ export const papers: PaperIndex[] = [
     year: 2025,
     venue: 'CoRL 2025 · Spotlight',
     categories: ['robust-grasp'],
+    graspTopics: ['closed-loop-acquisition', 'post-grasp-stabilization'],
     priority: 'high',
     deepRead: { completed: true, needed: false },
     tags: ['局部几何', '伪触觉', '特权教师', 'IL→PPO', '动态抓取'],
@@ -31,11 +32,35 @@ export const papers: PaperIndex[] = [
     year: 2026,
     venue: 'IEEE RA-L 2026',
     categories: ['robust-grasp'],
+    graspTopics: ['task-language-conditioned', 'post-grasp-stabilization'],
     priority: 'high',
     deepRead: { completed: false, needed: true },
     tags: ['动态工具使用', '抗扰抓取', '手指残差控制', '示范轨迹'],
     oneMinute:
       '面向锤击、锯切等动态工具使用，G2A 先由单段人类 RGB-D 示范限定功能抓取与腕轨迹，仿真筛出抗多轴力矩抓姿，再以本体感知手指 residual 在线抑制滑移。最值得借鉴的是“稳定初始抓姿+独立手指稳定器”，但腕部仍开环回放且策略逐任务训练，尚未证明可接入任意在线人控或迁移到 L20。',
+  },
+  {
+    id: 'dexter-2601-16046',
+    title:
+      'DextER: Language-driven Dexterous Grasp Generation with Embodied Reasoning',
+    shortTitle: 'DextER',
+    paperUrl: 'https://arxiv.org/abs/2601.16046',
+    authors: ['Junha Lee', 'Eunha Park', 'Minsu Cho'],
+    year: 2026,
+    venue: 'arXiv 2026 · v2',
+    categories: ['robust-grasp'],
+    graspTopics: ['pose-contact-synthesis', 'task-language-conditioned'],
+    priority: 'high',
+    deepRead: { completed: false, needed: true },
+    tags: [
+      '语言条件抓取',
+      '接触推理',
+      '具身思维链',
+      '可控抓姿生成',
+      'Shadow Hand',
+    ],
+    oneMinute:
+      '输入物体点云和语言指令，先自回归预测“哪个手指 link 接触物体哪里”，再生成 Shadow Hand 抓姿；在 DexGYS 仿真成功率达 67.14%，比无接触推理版高 4.77 个百分点。它是任务语义到接触位置的可解释抓姿生成器，但仍只验证了单一手型、静态单物体仿真。',
   },
   {
     id: 'clutterdexgrasp-2506-14317',
@@ -57,6 +82,7 @@ export const papers: PaperIndex[] = [
     year: 2025,
     venue: 'CoRL 2025 · Oral',
     categories: ['robust-grasp'],
+    graspTopics: ['scene-level-grasping', 'closed-loop-acquisition'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -86,6 +112,7 @@ export const papers: PaperIndex[] = [
     year: 2025,
     venue: 'IEEE T-RO · 2025',
     categories: ['robust-grasp'],
+    graspTopics: ['post-grasp-stabilization'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -108,6 +135,7 @@ export const papers: PaperIndex[] = [
     year: 2026,
     venue: 'arXiv 2026 · v1',
     categories: ['robust-grasp'],
+    graspTopics: ['post-grasp-stabilization'],
     priority: 'high',
     deepRead: { completed: false, needed: true },
     tags: ['多指力分配', '触觉闭环', '摩擦锥约束', '旋转防滑', '扰动补偿'],
@@ -133,6 +161,7 @@ export const papers: PaperIndex[] = [
     year: 2025,
     venue: 'Nature Communications · 2025',
     categories: ['robust-grasp', 'shared-control'],
+    graspTopics: ['closed-loop-acquisition', 'post-grasp-stabilization'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -163,6 +192,7 @@ export const papers: PaperIndex[] = [
     year: 2023,
     venue: 'ICRA 2023',
     categories: ['robust-grasp'],
+    graspTopics: ['pose-contact-synthesis'],
     priority: 'high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -194,6 +224,7 @@ export const papers: PaperIndex[] = [
     year: 2023,
     venue: 'ICCV 2023 · Best Paper Finalist',
     categories: ['robust-grasp'],
+    graspTopics: ['closed-loop-acquisition'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -223,6 +254,7 @@ export const papers: PaperIndex[] = [
     year: 2023,
     venue: 'ICRA 2023',
     categories: ['robust-grasp'],
+    graspTopics: ['pose-contact-synthesis', 'cross-embodiment'],
     priority: 'high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -254,6 +286,7 @@ export const papers: PaperIndex[] = [
     year: 2025,
     venue: 'ICRA 2025',
     categories: ['robust-grasp'],
+    graspTopics: ['pose-contact-synthesis', 'cross-embodiment'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -275,6 +308,7 @@ export const papers: PaperIndex[] = [
     year: 2025,
     venue: 'ICLR 2025',
     categories: ['robust-grasp', 'retarget-teleop'],
+    graspTopics: ['cross-embodiment', 'closed-loop-acquisition'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: ['跨本体策略', '人手特征抓握', '神经重定向', 'PPO教师', 'DAgger蒸馏'],
@@ -298,6 +332,11 @@ export const papers: PaperIndex[] = [
     year: 2025,
     venue: 'arXiv 2025 · v1',
     categories: ['robust-grasp'],
+    graspTopics: [
+      'pose-contact-synthesis',
+      'cross-embodiment',
+      'scene-level-grasping',
+    ],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -326,6 +365,11 @@ export const papers: PaperIndex[] = [
     year: 2024,
     venue: 'ECCV 2024',
     categories: ['robust-grasp'],
+    graspTopics: [
+      'task-language-conditioned',
+      'cross-embodiment',
+      'closed-loop-acquisition',
+    ],
     priority: 'high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -356,6 +400,7 @@ export const papers: PaperIndex[] = [
     year: 2026,
     venue: 'RSS 2026',
     categories: ['robust-grasp', 'retarget-teleop'],
+    graspTopics: ['cross-embodiment', 'closed-loop-acquisition'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -387,6 +432,7 @@ export const papers: PaperIndex[] = [
     year: 2024,
     venue: 'CoRL 2024 · PMLR 2025',
     categories: ['robust-grasp'],
+    graspTopics: ['pose-contact-synthesis', 'scene-level-grasping'],
     priority: 'high',
     deepRead: { completed: false, needed: true },
     tags: [
