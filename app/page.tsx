@@ -57,6 +57,8 @@ import {
 } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { migrateOverrides } from './data/classification';
+import { graspCircles, graspMapSize, positionGraspPapers } from './data/grasp-layout';
 import { graspTopicManifest } from './data/grasp-topics';
 import { categoryManifest } from './data/manifest';
 import { loadCategory, loadPaperDetail } from './data/loaders';
@@ -176,7 +178,7 @@ function isGraspTopicId(value: unknown): value is GraspTopicId {
 }
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState<CategoryId>('robust-grasp');
+  const [activeCategory, setActiveCategory] = useState<CategoryId>('grasping');
   const [loadedCategories, setLoadedCategories] = useState<Partial<Record<CategoryId, PaperIndex[]>>>({});
   const [knownPapers, setKnownPapers] = useState<Record<string, PaperIndex>>({});
   const [loadingCategory, setLoadingCategory] = useState(true);
@@ -185,7 +187,6 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [priorityFilter, setPriorityFilter] = useState<'all' | Priority>('all');
   const [readingFilter, setReadingFilter] = useState<ReadingFilter>('all');
-  const [graspTopicFilter, setGraspTopicFilter] = useState<GraspTopicId[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('graph');
   const [renderLimit, setRenderLimit] = useState(150);
   const [zoom, setZoom] = useState(1);
@@ -224,7 +225,7 @@ export default function Home() {
         if (!raw) return;
         const parsed = JSON.parse(raw) as Partial<LocalStore>;
         if (parsed.schemaVersion === 1 && parsed.papers && typeof parsed.papers === 'object') {
-          setOverrides(parsed.papers);
+          setOverrides(migrateOverrides(parsed.papers));
         } else {
           setNotice('发现旧版或无效的本地数据，已安全忽略。');
         }
@@ -291,10 +292,6 @@ export default function Home() {
       .filter((paper) => paper.categories.includes(activeCategory))
       .filter((paper) => priorityFilter === 'all' || paper.priority === priorityFilter)
       .filter((paper) => {
-        if (activeCategory !== 'robust-grasp' || graspTopicFilter.length === 0) return true;
-        return graspTopicFilter.some((topic) => paper.graspTopics?.includes(topic));
-      })
-      .filter((paper) => {
         if (readingFilter === 'completed') return paper.deepRead.completed;
         if (readingFilter === 'needed') return paper.deepRead.needed;
         if (readingFilter === 'undecided') return !paper.deepRead.completed && !paper.deepRead.needed;
@@ -306,13 +303,14 @@ export default function Home() {
         return haystack.includes(normalizedQuery);
       })
       .sort((left, right) => priorities.indexOf(left.priority) - priorities.indexOf(right.priority));
-  }, [activeCategory, graspTopicFilter, mergedPapers, priorityFilter, query, readingFilter]);
+  }, [activeCategory, mergedPapers, priorityFilter, query, readingFilter]);
 
-  const visiblePapers = filteredPapers.slice(0, renderLimit);
+  const visiblePapers = useMemo(() => activeCategory === 'grasping' ? filteredPapers : filteredPapers.slice(0, renderLimit), [activeCategory, filteredPapers, renderLimit]);
+  const allGraspPapers = useMemo(() => mergedPapers.filter((paper) => paper.categories.includes('grasping')), [mergedPapers]);
   const emphasizedPaperId = hoveredPaperId ?? focusedPaperId;
   const nodePositions = useMemo(
-    () => positionPapers(visiblePapers, zoom),
-    [visiblePapers, zoom],
+    () => activeCategory === 'grasping' ? positionGraspPapers(allGraspPapers) : positionPapers(visiblePapers, zoom),
+    [activeCategory, allGraspPapers, visiblePapers, zoom],
   );
 
   const edges = useMemo(() => {
@@ -340,7 +338,7 @@ export default function Home() {
   }, [overrides]);
 
   const graspTopicCounts = useMemo(() => {
-    const robustPapers = mergedPapers.filter((paper) => paper.categories.includes('robust-grasp'));
+    const robustPapers = mergedPapers.filter((paper) => paper.categories.includes('grasping'));
     return Object.fromEntries(
       graspTopicManifest.map((topic) => [
         topic.id,
@@ -348,12 +346,6 @@ export default function Home() {
       ]),
     ) as Record<GraspTopicId, number>;
   }, [mergedPapers]);
-
-  const activeGraspTopicDescription = graspTopicFilter.length === 1
-    ? graspTopicManifest.find((topic) => topic.id === graspTopicFilter[0])?.description
-    : graspTopicFilter.length > 1
-      ? '显示命中任一已选研究主线的论文。'
-      : '按主要研究问题组织，一篇论文可同时属于多个圆。';
 
   const selectedPaper = selectedPaperId
     ? mergedPapers.find((paper) => paper.id === selectedPaperId) ?? null
@@ -363,6 +355,11 @@ export default function Home() {
   const updatePaper = useCallback((id: string, changes: PaperOverride['changes']) => {
     const original = originalPapers[id];
     if (!original) throw new Error('没有找到这篇论文。');
+    const currentPaper = applyOverride(original, overrides[id]);
+    const nextPaper = { ...currentPaper, ...changes };
+    if (nextPaper.categories.includes('grasping') && !nextPaper.graspTopics?.length && (changes.graspTopics !== undefined || (changes.categories && !currentPaper.categories.includes('grasping')))) {
+      throw new Error('请至少选择跨本体泛化、Robust、任务理解中的一项。');
+    }
     const existing = overrides[id];
     const nextOverride: PaperOverride = {
       original: existing?.original ?? original,
@@ -411,6 +408,11 @@ export default function Home() {
       setNotice(`《${paper.shortTitle}》已在 ${categoryManifest.find((item) => item.id === category)?.label} 中。`);
       return;
     }
+    if (category === 'grasping' && !paper.graspTopics?.length) {
+      openPaper(paper);
+      setNotice('请在详情中选择 Grasping 的三项分类之一，即可加入。');
+      return;
+    }
     updatePaper(paperId, { categories: [...paper.categories, category] });
     setNotice(`已把《${paper.shortTitle}》加入 ${categoryManifest.find((item) => item.id === category)?.label}。`);
   };
@@ -425,6 +427,10 @@ export default function Home() {
 
   const togglePaperCategory = (category: CategoryId, checked: boolean) => {
     if (!selectedPaper) return;
+    if (checked && category === 'grasping' && !selectedPaper.graspTopics?.length) {
+      setNotice('请先在下方选择跨本体泛化、Robust、任务理解中的至少一项。');
+      return;
+    }
     let categories = selectedPaper.categories;
     if (checked) categories = Array.from(new Set([...categories, category]));
     else categories = categories.filter((item) => item !== category);
@@ -441,7 +447,11 @@ export default function Home() {
     const nextTopics = topics.includes(topic)
       ? topics.filter((item) => item !== topic)
       : [...topics, topic];
-    updatePaper(selectedPaper.id, { graspTopics: nextTopics });
+    if (!nextTopics.length && selectedPaper.categories.includes('grasping')) {
+      setNotice('Grasping 论文至少保留一项分类；也可以取消所属 Grasping 地图。');
+      return;
+    }
+    updatePaper(selectedPaper.id, { graspTopics: nextTopics, categories: Array.from(new Set([...selectedPaper.categories, 'grasping' as const])) });
   };
 
   const addTag = (rawTag: string) => {
@@ -494,7 +504,7 @@ export default function Home() {
         const record = value as PaperOverride;
         return Boolean(record?.original?.id && record.changes && record.updatedAt);
       });
-      persistOverrides({ ...overrides, ...Object.fromEntries(safeEntries) });
+      persistOverrides({ ...overrides, ...migrateOverrides(Object.fromEntries(safeEntries)) });
       setNotice(`已导入 ${safeEntries.length} 篇论文的修改。`);
     } catch (error) {
       setNotice(error instanceof Error ? `导入失败：${error.message}` : '导入失败。');
@@ -536,7 +546,7 @@ export default function Home() {
       void Promise.resolve(context.registerTool({
         name: 'update_literature_paper',
         title: '更新论文地图信息',
-        description: '更新一篇已加载论文的地图分类、Grasp 研究主线、优先级、精读状态或标签，并同步到可见界面和本地存储。',
+        description: '更新一篇已加载论文的地图分类、Grasping 分类、优先级、精读状态或标签，并同步到可见界面和本地存储。',
         inputSchema: {
           type: 'object',
           properties: {
@@ -569,7 +579,7 @@ export default function Home() {
           }
           if (value.graspTopics !== undefined) {
             if (!Array.isArray(value.graspTopics) || !value.graspTopics.every(isGraspTopicId)) {
-              throw new Error('Grasp 研究主线无效。');
+              throw new Error('Grasping 分类无效。');
             }
             changes.graspTopics = Array.from(new Set(value.graspTopics));
           }
@@ -661,7 +671,7 @@ export default function Home() {
           </TabsList>
 
           <div className="priority-key">
-            <p>优先级 · 越靠中心越高</p>
+            <p>{activeCategory === 'grasping' ? '优先级 · 节点越大越高' : '优先级 · 越靠中心越高'}</p>
             {priorities.map((priority) => (
               <span key={priority}>
                 <i className={`priority-dot priority-${priority}`} />
@@ -705,57 +715,11 @@ export default function Home() {
                   </Select>
                 </div>
                 <div className="view-switch" aria-label="切换视图">
-                  <Button size="icon" variant={viewMode === 'graph' ? 'secondary' : 'ghost'} onClick={() => setViewMode('graph')} aria-label="蛛网图" aria-pressed={viewMode === 'graph'}><Network /></Button>
+                  <Button size="icon" variant={viewMode === 'graph' ? 'secondary' : 'ghost'} onClick={() => setViewMode('graph')} aria-label={activeCategory === 'grasping' ? 'Grasping 三圆图' : '蛛网图'} aria-pressed={viewMode === 'graph'}><Network /></Button>
                   <Button size="icon" variant={viewMode === 'list' ? 'secondary' : 'ghost'} onClick={() => setViewMode('list')} aria-label="文章列表" aria-pressed={viewMode === 'list'}><List /></Button>
                 </div>
               </div>
             </div>
-
-            {activeCategory === 'robust-grasp' && (
-              <section className="grasp-topic-lens" aria-labelledby="grasp-topic-title">
-                <div className="grasp-topic-copy">
-                  <div>
-                    <p className="eyebrow" id="grasp-topic-title">SECOND LENS · 研究主线</p>
-                    <p>{activeGraspTopicDescription}</p>
-                  </div>
-                  {graspTopicFilter.length > 0 && (
-                    <button type="button" onClick={() => setGraspTopicFilter([])}>清除多选</button>
-                  )}
-                </div>
-                <div className="grasp-topic-circles" aria-label="按 Grasp 研究主线筛选">
-                  <button
-                    type="button"
-                    className={graspTopicFilter.length === 0 ? 'is-active' : ''}
-                    aria-pressed={graspTopicFilter.length === 0}
-                    onClick={() => { setGraspTopicFilter([]); setRenderLimit(150); }}
-                  >
-                    <span>全部</span>
-                    <small>{categoryCounts['robust-grasp']}</small>
-                  </button>
-                  {graspTopicManifest.map((topic) => {
-                    const active = graspTopicFilter.includes(topic.id);
-                    return (
-                      <button
-                        key={topic.id}
-                        type="button"
-                        className={active ? 'is-active' : ''}
-                        aria-pressed={active}
-                        title={`${topic.label}：${topic.description}`}
-                        onClick={() => {
-                          setGraspTopicFilter((current) => active
-                            ? current.filter((item) => item !== topic.id)
-                            : [...current, topic.id]);
-                          setRenderLimit(150);
-                        }}
-                      >
-                        <span>{topic.shortLabel}</span>
-                        <small>{graspTopicCounts[topic.id]}</small>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
 
             <div className="reading-legend" aria-label="节点颜色图例">
               <span><i className="state-dot state-deep" /><Check />已精读</span>
@@ -774,22 +738,32 @@ export default function Home() {
             ) : filteredPapers.length === 0 ? (
               <div className="empty-map">
                 <Network />
-                <h3>{query || priorityFilter !== 'all' || readingFilter !== 'all' || graspTopicFilter.length > 0 ? '没有符合条件的论文' : '这张地图还没有论文'}</h3>
-                <p>{query || priorityFilter !== 'all' || readingFilter !== 'all' || graspTopicFilter.length > 0 ? '换个关键词，或清除筛选条件。' : '以后读完相关文章时，把它归入这张地图即可；也可以从其他地图把节点拖到左侧分类。'}</p>
-                {(query || priorityFilter !== 'all' || readingFilter !== 'all' || graspTopicFilter.length > 0) && <Button variant="outline" onClick={() => { setQuery(''); setPriorityFilter('all'); setReadingFilter('all'); setGraspTopicFilter([]); }}>清除筛选</Button>}
+                <h3>{query || priorityFilter !== 'all' || readingFilter !== 'all' ? '没有符合条件的论文' : '这张地图还没有论文'}</h3>
+                <p>{query || priorityFilter !== 'all' || readingFilter !== 'all' ? '换个关键词，或清除筛选条件。' : '以后读完相关文章时，把它归入这张地图即可；也可以从其他地图把节点拖到左侧分类。'}</p>
+                {(query || priorityFilter !== 'all' || readingFilter !== 'all') && <Button variant="outline" onClick={() => { setQuery(''); setPriorityFilter('all'); setReadingFilter('all'); }}>清除筛选</Button>}
               </div>
             ) : viewMode === 'graph' ? (
-              <div className="graph-canvas">
-                <div className="zoom-controls">
+              <div className={`graph-canvas${activeCategory === 'grasping' ? ' grasp-canvas' : ''}`} tabIndex={activeCategory === 'grasping' ? 0 : undefined} role={activeCategory === 'grasping' ? 'region' : undefined} aria-label={activeCategory === 'grasping' ? 'Grasping 全部论文：跨本体泛化、Robust、任务理解三圆图，可横向滚动' : undefined}>
+                {activeCategory !== 'grasping' && <div className="zoom-controls">
                   <Button size="icon-sm" variant="ghost" onClick={() => setZoom((value) => Math.max(.7, Number((value - .1).toFixed(2))))} aria-label="缩小节点间距"><ZoomOut /></Button>
                   <span>{Math.round(zoom * 100)}%</span>
                   <Button size="icon-sm" variant="ghost" onClick={() => setZoom((value) => Math.min(1.15, Number((value + .1).toFixed(2))))} aria-label="放大节点间距"><ZoomIn /></Button>
-                </div>
-                <div className={`graph-space${emphasizedPaperId ? ' is-emphasizing' : ''}`}>
+                </div>}
+                <div className={`graph-space${activeCategory === 'grasping' ? ' grasp-space' : ''}${emphasizedPaperId ? ' is-emphasizing' : ''}`}>
+                  {activeCategory === 'grasping' ? <>
+                    <svg className="grasp-venn" viewBox={`0 0 ${graspMapSize.width} ${graspMapSize.height}`} aria-hidden="true">
+                      {graspCircles.map((circle) => <circle key={circle.id} className={`grasp-ring topic-${circle.id}`} cx={circle.x} cy={circle.y} r={circle.r} />)}
+                    </svg>
+                    {graspCircles.map((circle) => <div key={circle.id} className={`grasp-circle-label topic-${circle.id}`} style={{ left: `${circle.labelX / graspMapSize.width * 100}%`, top: `${circle.labelY / graspMapSize.height * 100}%` }}>
+                      <strong>{graspTopicManifest.find((topic) => topic.id === circle.id)?.label}</strong>
+                      <span>{graspTopicCounts[circle.id]} 篇</span>
+                    </div>)}
+                  </> : <>
                   <div className="orbit orbit-very-high" style={{ scale: zoom }}><span>极高</span></div>
                   <div className="orbit orbit-high" style={{ scale: zoom }}><span>高</span></div>
                   <div className="orbit orbit-medium" style={{ scale: zoom }}><span>中</span></div>
                   <div className="orbit orbit-low" style={{ scale: zoom }}><span>低</span></div>
+                  </>}
                   <svg className="edge-layer" aria-hidden="true">
                     {edges.map((edge) => {
                       const from = nodePositions[edge.from];
@@ -811,7 +785,7 @@ export default function Home() {
                               draggable
                               className={`paper-node state-${reading.key}${emphasizedPaperId === paper.id ? ' is-highlighted' : ''}${emphasizedPaperId && emphasizedPaperId !== paper.id ? ' is-dimmed' : ''}${position.x > 70 ? ' label-left' : ''}`}
                               style={{ left: `${position.x}%`, top: `${position.y}%`, '--node-size': `${size}px` } as CSSProperties}
-                              aria-label={`打开 ${paper.shortTitle}：${priorityLabels[paper.priority]}优先级，${reading.label}`}
+                              aria-label={`打开 ${paper.shortTitle}：${priorityLabels[paper.priority]}优先级，${reading.label}${activeCategory === 'grasping' ? `；${graspTopicManifest.filter((topic) => paper.graspTopics?.includes(topic.id)).map((topic) => topic.label).join('、')}` : ''}`}
                               onMouseEnter={() => setHoveredPaperId(paper.id)}
                               onMouseLeave={() => setHoveredPaperId((current) => current === paper.id ? null : current)}
                               onFocus={() => setFocusedPaperId(paper.id)}
@@ -846,8 +820,8 @@ export default function Home() {
                     );
                   })}
                 </div>
-                <div className="graph-note">同级论文沿环均匀排布 · 悬停突出当前论文与相关连线 · ＋／－ 调整节点间距</div>
-                {filteredPapers.length > renderLimit && <Button className="load-more" variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
+                <div className="graph-note">{activeCategory === 'grasping' ? '全部论文同图展示 · 交叠区域表示同时归属 · 每篇只显示一次' : '同级论文沿环均匀排布 · 悬停突出当前论文与相关连线 · ＋／－ 调整节点间距'}</div>
+                {activeCategory !== 'grasping' && filteredPapers.length > renderLimit && <Button className="load-more" variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
               </div>
             ) : (
               <ul className="paper-list">
@@ -865,7 +839,7 @@ export default function Home() {
                     </li>
                   );
                 })}
-                {filteredPapers.length > renderLimit && <Button variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
+                {activeCategory !== 'grasping' && filteredPapers.length > renderLimit && <Button variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
               </ul>
             )}
           </TabsContent>
@@ -929,9 +903,9 @@ export default function Home() {
                     </div>
                   </section>
 
-                  {selectedPaper.categories.includes('robust-grasp') && (
+                  {(
                     <section className="detail-section">
-                      <p className="section-label">Grasp 研究主线（可多选）</p>
+                      <p className="section-label">Grasping 分类（仅这三项，可多选）</p>
                       <div className="detail-topic-circles">
                         {graspTopicManifest.map((topic) => {
                           const active = selectedPaper.graspTopics?.includes(topic.id) ?? false;
@@ -939,7 +913,7 @@ export default function Home() {
                             <button
                               key={topic.id}
                               type="button"
-                              className={active ? 'is-active' : ''}
+                              className={`topic-${topic.id}${active ? ' is-active' : ''}`}
                               aria-pressed={active}
                               title={topic.description}
                               onClick={() => togglePaperGraspTopic(topic.id)}

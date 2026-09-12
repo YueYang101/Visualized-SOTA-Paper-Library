@@ -1,12 +1,7 @@
 import type { CategoryId, PaperDetail, PaperIndex } from './types';
 
 const categoryLoaders: Record<CategoryId, () => Promise<PaperIndex[]>> = {
-  'perception-understanding': () =>
-    import('./categories/perception-understanding').then(
-      (module) => module.papers,
-    ),
-  'robust-grasp': () =>
-    import('./categories/robust-grasp').then((module) => module.papers),
+  grasping: () => import('./categories/grasping').then((module) => module.papers),
   'shared-control': () =>
     import('./categories/shared-control').then((module) => module.papers),
   'retarget-teleop': () =>

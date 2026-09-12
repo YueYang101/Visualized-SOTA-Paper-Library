@@ -1,0 +1,101 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { test } from 'node:test';
+import { Script } from 'node:vm';
+import ts from 'typescript';
+
+const cache = new Map();
+function loadTs(file) {
+  const resolved = path.resolve(file);
+  if (cache.has(resolved)) return cache.get(resolved);
+  const compiled = { exports: {} };
+  const { outputText } = ts.transpileModule(fs.readFileSync(resolved, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
+  new Script(`(function(exports, require, module) { ${outputText} })`).runInThisContext()(compiled.exports, (name) => loadTs(path.resolve(path.dirname(resolved), `${name}.ts`)), compiled);
+  cache.set(resolved, compiled.exports);
+  return compiled.exports;
+}
+
+const { papers } = loadTs('app/data/categories/grasping.ts');
+const { graspTopicIds, categoryIds } = loadTs('app/data/types.ts');
+const { categoryManifest } = loadTs('app/data/manifest.ts');
+const { graspCircles, graspMapSize, positionGraspPapers, graspMembershipAt } = loadTs('app/data/grasp-layout.ts');
+const { migrateOverrides } = loadTs('app/data/classification.ts');
+
+test('Grasping contains all 21 papers and exactly the three user-selected classes', () => {
+  assert.deepEqual(categoryIds, ['grasping', 'shared-control', 'retarget-teleop']);
+  assert.deepEqual(graspTopicIds, ['cross-embodiment', 'robust', 'task-understanding']);
+  assert.equal(papers.length, 21);
+  assert.equal(new Set(papers.map((paper) => paper.id)).size, 21);
+  for (const paper of papers) {
+    assert.ok(paper.graspTopics.length > 0);
+    assert.ok(paper.graspTopics.every((topic) => graspTopicIds.includes(topic)));
+  }
+  for (const id of ['shapegrasp-2403-18062', 'thinkgrasp-2407-11298', 'graspgpt-2307-13204', 'partdextog-2505-12294', 'vlm-intent-assistance-2508-11093']) {
+    assert.deepEqual(papers.find((paper) => paper.id === id).graspTopics, ['task-understanding']);
+  }
+});
+
+test('map counts and cross-index memberships agree, preserving all 31 unique papers', () => {
+  const unique = new Map();
+  for (const category of categoryManifest) {
+    const index = loadTs(`app/data/categories/${category.id}.ts`).papers;
+    assert.equal(index.length, category.count);
+    for (const paper of index) {
+      assert.ok(paper.categories.includes(category.id));
+      assert.ok(paper.categories.every((id) => categoryIds.includes(id)));
+      if (unique.has(paper.id)) {
+        assert.deepEqual(paper.categories, unique.get(paper.id).categories);
+        assert.deepEqual(paper.graspTopics, unique.get(paper.id).graspTopics);
+      }
+      unique.set(paper.id, paper);
+    }
+  }
+  assert.equal(unique.size, 31);
+});
+
+test('every paper and its label fit the right circles, without overlapping labels', () => {
+  assert.equal(graspCircles.length, 3);
+  const positions = positionGraspPapers(papers);
+  const boxes = [];
+  for (const paper of papers) {
+    const { x: pctX, y: pctY } = positions[paper.id];
+    const x = pctX / 100 * graspMapSize.width;
+    const y = pctY / 100 * graspMapSize.height;
+    assert.ok(y < 900, `${paper.shortTitle} must stay in the three-circle map`);
+    const expected = graspTopicIds.filter((topic) => paper.graspTopics.includes(topic));
+    for (const [dx, dy] of [[0, 0], [-75, -18], [75, -18], [-75, 18], [75, 18]]) {
+      assert.deepEqual(graspMembershipAt(x + dx, y + dy), expected, paper.shortTitle);
+    }
+    for (const previous of boxes) {
+      assert.ok(Math.abs(previous.x - x) >= 150 || Math.abs(previous.y - y) >= 36, `${previous.id} overlaps ${paper.id}`);
+    }
+    boxes.push({ x, y, id: paper.id });
+  }
+  // Input order cannot move a paper to a different region or hide it.
+  assert.deepEqual(positionGraspPapers([...papers].reverse()), positions);
+});
+
+test('old perception overrides migrate while preserving personal reading state and tags', () => {
+  const original = { ...papers.find((paper) => paper.id === 'shapegrasp-2403-18062'), categories: ['perception-understanding'], graspTopics: undefined };
+  const input = { [original.id]: { original, changes: { categories: ['perception-understanding', 'shared-control'], priority: 'low', deepRead: { completed: true, needed: false }, tags: ['我的标注'] }, updatedAt: '2026-09-12' } };
+  const snapshot = JSON.stringify(input);
+  const migrated = migrateOverrides(input)[original.id];
+  assert.deepEqual(migrated.original.categories, ['grasping']);
+  assert.deepEqual(migrated.changes.categories, ['grasping', 'shared-control']);
+  assert.deepEqual(migrated.changes.graspTopics, ['task-understanding']);
+  assert.deepEqual(migrated.changes.deepRead, { completed: true, needed: false });
+  assert.deepEqual(migrated.changes.tags, ['我的标注']);
+  assert.equal(migrated.changes.priority, 'low');
+  assert.equal(JSON.stringify(input), snapshot);
+  assert.deepEqual(migrateOverrides({ [original.id]: migrated })[original.id], migrated);
+});
+
+test('old six-lens edits collapse to the allowed three without losing independent edits', () => {
+  const original = { ...papers[0], categories: ['robust-grasp'], graspTopics: ['closed-loop-acquisition', 'post-grasp-stabilization'] };
+  const changes = { graspTopics: ['pose-contact-synthesis', 'cross-embodiment', 'task-language-conditioned', 'scene-level-grasping'], tags: ['保留'] };
+  const migrated = migrateOverrides({ x: { original, changes, updatedAt: '2026-09-12' } }).x;
+  assert.deepEqual(migrated.original.graspTopics, ['robust']);
+  assert.deepEqual(migrated.changes.graspTopics, ['cross-embodiment', 'task-understanding', 'robust']);
+  assert.deepEqual(migrated.changes.tags, ['保留']);
+});

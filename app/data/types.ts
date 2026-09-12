@@ -1,6 +1,5 @@
 export const categoryIds = [
-  'robust-grasp',
-  'perception-understanding',
+  'grasping',
   'shared-control',
   'retarget-teleop',
 ] as const;
@@ -8,14 +7,7 @@ export const categoryIds = [
 export type CategoryId = (typeof categoryIds)[number];
 export type Priority = 'very-high' | 'high' | 'medium' | 'low';
 
-export const graspTopicIds = [
-  'pose-contact-synthesis',
-  'task-language-conditioned',
-  'cross-embodiment',
-  'scene-level-grasping',
-  'closed-loop-acquisition',
-  'post-grasp-stabilization',
-] as const;
+export const graspTopicIds = ['cross-embodiment', 'robust', 'task-understanding'] as const;
 
 export type GraspTopicId = (typeof graspTopicIds)[number];
 

@@ -1,13 +1,22 @@
 # 文献脉络图
 
-这是一个本地使用的论文知识地图。目前有四张主地图：
+这是一个本地使用的论文知识地图。目前有三张主地图：
 
-- **Robust Grasp**：抗扰动、闭环反馈与泛化抓取
-- **感知与理解**：物体部件、可供性、语义抓取与意图理解
+- **Grasping**：仅分为 **跨本体泛化 / Robust / 任务理解**；感知理解归入任务理解
 - **Share Control**：人机意图融合、仲裁与辅助控制
 - **Retarget & Teleop**：动作重定向、遥操作与具身映射
 
-一篇论文可以同时属于多张地图。优先级为 **极高 / 高 / 中 / 低**，越重要越靠近图中心，点也越大；节点颜色和文字表示精读状态。
+一篇论文可以同时属于多张地图。优先级为 **极高 / 高 / 中 / 低**，节点越大优先级越高；Grasping 的位置表示三类的归属和交集，其他地图保留优先级同心环；节点颜色和文字表示精读状态。
+
+## Grasping 三圆图（2026-09-12 按用户要求修正）
+
+Grasping 默认同时显示全部 21 篇论文，三个相交大圆分别为 **跨本体泛化（6）／Robust（13）／任务理解（7）**。一篇只显示一个节点；兼属多类的论文位于交叠区域，因此三个圆的计数不相加为总篇数。Grasp-to-Act 在 Robust 与任务理解交集；CrossDex、AnyDexGrasp、GraspXL、DexGrasp-Zero 在跨本体泛化与 Robust 交集。
+
+不再显示“位姿／场景／闭环／稳定”等额外分类筛选。细分技术词可保留为论文标签，不作为新分类。GraspXL 的空间目标条件不直接等于任务语义理解；DexGraspNet 在 Robust 圆作为稳定抓姿数据／合成基础，具体能力边界仍见详情。位置只编码分类，不表示论文质量、方法包含关系或已证明可组合。
+
+三圆归属、列表与详情使用同一份分类。保留搜索、优先级、精读筛选；搜索时节点留在原区域。窄屏可横向滚动查看完整图，或切换文章列表。旧的本地备份与浏览器修改会将感知理解并入任务理解、六项研究主线迁移到这三项，保留精读状态、优先级和个人标签。
+
+**分类约束：未经用户明确要求，不新增顶层地图或 Grasping 子分类。** 检查分类、跨索引计数、三圆位置与旧数据迁移：`node --test tests/grasping.test.mjs`。
 
 ## 当前内容
 
@@ -16,7 +25,7 @@
 已有精读记录：
 
 - **RobustDexGrasp: Robust Dexterous Grasping of General Objects**
-- 分类：Robust Grasp
+- 分类：Grasping → Robust
 - 优先级：高
 - 状态：已精读，当前不需要复读
 - 标签：局部几何、伪触觉、特权教师、IL→PPO、动态抓取
@@ -27,15 +36,15 @@
 
 本轮 SOTA / 强基线预读：
 
-- **Robust Grasp**：Grasp-to-Act、ClutterDexGrasp、Shear-based Grasp Control、TacDexGrasp、Shared Bionic Hand、DexGraspNet、UniDexGrasp++、GenDexGrasp、D(R,O) Grasp、CrossDex、AnyDexGrasp、GraspXL、DexGrasp-Zero、DexGraspNet 2.0
+- **Grasping**：Grasp-to-Act、ClutterDexGrasp、Shear-based Grasp Control、TacDexGrasp、Shared Bionic Hand、DexGraspNet、UniDexGrasp++、GenDexGrasp、D(R,O) Grasp、CrossDex、AnyDexGrasp、GraspXL、DexGrasp-Zero、DexGraspNet 2.0
 - **Share Control**：To the Noise and Back、IDA、FlashBack、VOSA、Shared Bionic Hand、TeleDexter
 - **Retarget & Teleop**：AnyDexRT、TeleDexter、DexUMI、Bunny-VisionPro、CrossDex、DexGrasp-Zero
 
-其中 Shared Bionic Hand 同属 Robust Grasp 与 Share Control；TeleDexter 同属 Share Control 与 Retarget & Teleop；CrossDex、DexGrasp-Zero 同属 Robust Grasp 与 Retarget & Teleop。多分类只重复轻量索引，完整详情仍只有一份。
+其中 Shared Bionic Hand 同属 Grasping 与 Share Control；TeleDexter 同属 Share Control 与 Retarget & Teleop；CrossDex、DexGrasp-Zero 同属 Grasping 与 Retarget & Teleop。多分类只重复轻量索引，完整详情仍只有一份。
 
-## 感知与理解（2026-09-12 新增）
+## Grasping → 任务理解（含感知理解）
 
-独立收录研究物体部件、可供性、任务语义和意图理解的工作，避免把语义区域选择与鲁棒执行、跨本体迁移混为一类。
+这五篇与 DextER、Grasp-to-Act 一起属于 Grasping 内的“任务理解”，不再另建顶层感知理解地图。
 
 - **ShapeGrasp**：几何部件分解与 LLM 任务部件选择。
 - **ThinkGrasp**：VLM 目标／部件区域理解，再接分割与抓取网络。
@@ -45,7 +54,7 @@
 
 五篇均标为“待精读”；卡片注明预读范围和未核验事项。VLM Intent Assistance 是待验证的扩展摘要，其计划实验不作为已完成结果。使用场景：让语义模块提出可能抓法，结合 Quest 轨迹与解码手形推断用户偏好，再由抓取模型检验可行性并执行。
 
-## Robust Grasp 当前格局（2026-09）
+## Grasping 当前格局（2026-09）
 
 这个方向没有一个可以跨任务直接比较的统一 SOTA。静态抓姿生成、动态闭环抓取、杂乱场景、抓后抗扰和跨本体零样本使用不同输入、手型、成功标准与真实实验设置，论文成功率不能直接排成一张总榜。
 
@@ -196,6 +205,6 @@ GitHub Pages 的自动发布配置位于 `.github/workflows/pages.yml`。线上�
 
 - 用户原话中的“精度”按“**精读**”理解。
 - `Retarget & Teleop` 暂作为一张组合地图；数据结构已支持以后拆成两张，不需要重写论文记录。
-- RobustDexGrasp 只归入 Robust Grasp。它对共享控制有“自主稳定器 / expert prior”的借鉴价值，但论文自身没有用户输入、意图识别或控制权分配。
+- RobustDexGrasp 归入 Grasping → Robust。它对共享控制有“自主稳定器 / expert prior”的借鉴价值，但论文自身没有用户输入、意图识别或控制权分配。
 - 目标资料目录最初为空，因此当前只加入用户提供的这一篇真实精读记录，没有虚构论文占位。
 - 如果以后希望网页修改立即写回磁盘，而不再通过导出 / 导入，需要增加一个很小的本地保存服务。
