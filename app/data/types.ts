@@ -1,5 +1,6 @@
 export const categoryIds = [
   'robust-grasp',
+  'perception-understanding',
   'shared-control',
   'retarget-teleop',
 ] as const;
@@ -108,7 +109,12 @@ export interface GraspTopicManifestItem {
 
 export interface PaperOverride {
   original: PaperIndex;
-  changes: Partial<Pick<PaperIndex, 'categories' | 'graspTopics' | 'priority' | 'deepRead' | 'tags'>>;
+  changes: Partial<
+    Pick<
+      PaperIndex,
+      'categories' | 'graspTopics' | 'priority' | 'deepRead' | 'tags'
+    >
+  >;
   updatedAt: string;
 }
 

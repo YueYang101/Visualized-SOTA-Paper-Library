@@ -1,6 +1,10 @@
 import type { CategoryId, PaperDetail, PaperIndex } from './types';
 
 const categoryLoaders: Record<CategoryId, () => Promise<PaperIndex[]>> = {
+  'perception-understanding': () =>
+    import('./categories/perception-understanding').then(
+      (module) => module.papers,
+    ),
   'robust-grasp': () =>
     import('./categories/robust-grasp').then((module) => module.papers),
   'shared-control': () =>
@@ -10,6 +14,18 @@ const categoryLoaders: Record<CategoryId, () => Promise<PaperIndex[]>> = {
 };
 
 const detailLoaders: Record<string, () => Promise<PaperDetail>> = {
+  'shapegrasp-2403-18062': () =>
+    import('./details/shapegrasp-2403-18062').then((module) => module.detail),
+  'thinkgrasp-2407-11298': () =>
+    import('./details/thinkgrasp-2407-11298').then((module) => module.detail),
+  'graspgpt-2307-13204': () =>
+    import('./details/graspgpt-2307-13204').then((module) => module.detail),
+  'partdextog-2505-12294': () =>
+    import('./details/partdextog-2505-12294').then((module) => module.detail),
+  'vlm-intent-assistance-2508-11093': () =>
+    import('./details/vlm-intent-assistance-2508-11093').then(
+      (module) => module.detail,
+    ),
   'dexter-2601-16046': () =>
     import('./details/dexter-2601-16046').then((module) => module.detail),
   'grasp-to-act-2602-20466': () =>

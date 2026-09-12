@@ -1,8 +1,9 @@
 # 文献脉络图
 
-这是一个本地使用的论文知识地图。目前有三张主地图：
+这是一个本地使用的论文知识地图。目前有四张主地图：
 
 - **Robust Grasp**：抗扰动、闭环反馈与泛化抓取
+- **感知与理解**：物体部件、可供性、语义抓取与意图理解
 - **Share Control**：人机意图融合、仲裁与辅助控制
 - **Retarget & Teleop**：动作重定向、遥操作与具身映射
 
@@ -10,7 +11,7 @@
 
 ## 当前内容
 
-目前共收录 **25 篇**论文：3 篇已有精读记录，22 篇为 2026-09 按当前研究方向筛选的 SOTA / 强基线预读，后者统一标为“待精读”。“SOTA”是随时间变化的筛选判断，不代表永久排名。
+目前共收录 **31 篇**论文：3 篇已有精读记录，28 篇为待精读的论文预读与研究方案。“SOTA”是随时间变化的筛选判断，不代表永久排名。
 
 已有精读记录：
 
@@ -31,6 +32,18 @@
 - **Retarget & Teleop**：AnyDexRT、TeleDexter、DexUMI、Bunny-VisionPro、CrossDex、DexGrasp-Zero
 
 其中 Shared Bionic Hand 同属 Robust Grasp 与 Share Control；TeleDexter 同属 Share Control 与 Retarget & Teleop；CrossDex、DexGrasp-Zero 同属 Robust Grasp 与 Retarget & Teleop。多分类只重复轻量索引，完整详情仍只有一份。
+
+## 感知与理解（2026-09-12 新增）
+
+独立收录研究物体部件、可供性、任务语义和意图理解的工作，避免把语义区域选择与鲁棒执行、跨本体迁移混为一类。
+
+- **ShapeGrasp**：几何部件分解与 LLM 任务部件选择。
+- **ThinkGrasp**：VLM 目标／部件区域理解，再接分割与抓取网络。
+- **GraspGPT**：LLM 语义知识辅助未见概念的任务导向抓取。
+- **PartDexTOG**：语言部件分析与条件扩散灵巧抓姿生成。
+- **VLM Intent Assistance**：VLM 语义先验与 GUIDER 意图概率融合，同时归入 Share Control。
+
+五篇均标为“待精读”；卡片注明预读范围和未核验事项。VLM Intent Assistance 是待验证的扩展摘要，其计划实验不作为已完成结果。使用场景：让语义模块提出可能抓法，结合 Quest 轨迹与解码手形推断用户偏好，再由抓取模型检验可行性并执行。
 
 ## Robust Grasp 当前格局（2026-09）
 
@@ -145,7 +158,7 @@
 
 数据按三层拆开：
 
-1. 首页只包含三张地图的名称和数量。
+1. 首页只包含四张地图的名称和数量。
 2. 点击地图后，只读取当前地图的轻量论文索引。
 3. 点击某个节点后，才读取该论文的完整精读卡。
 
@@ -158,7 +171,7 @@ app/
   page.tsx                       页面与交互
   globals.css                    视觉样式
   data/
-    manifest.ts                  三张地图及数量
+    manifest.ts                  四张地图及数量
     categories/                  各地图轻量索引，按地图按需加载
     details/                     单篇完整精读卡，按论文按需加载
     loaders.ts                   分片入口
