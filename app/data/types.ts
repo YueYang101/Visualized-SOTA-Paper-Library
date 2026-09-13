@@ -2,6 +2,7 @@ export const categoryIds = [
   'grasping',
   'shared-control',
   'retarget-teleop',
+  'online-learning',
 ] as const;
 
 export type CategoryId = (typeof categoryIds)[number];

@@ -62,6 +62,7 @@ import { graspCircles, graspMapSize, positionGraspPapers } from './data/grasp-la
 import { graspTopicManifest } from './data/grasp-topics';
 import { categoryManifest } from './data/manifest';
 import { loadCategory, loadPaperDetail } from './data/loaders';
+import { onlineLearningOverview } from './data/online-learning-overview';
 import {
   positionSharedControlPapers,
   sharedControlCircles,
@@ -786,6 +787,43 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            {category.id === 'online-learning' ? (
+              <section className="online-learning-guide" aria-labelledby="online-learning-guide-title">
+                <div className="online-guide-definition">
+                  <p className="eyebrow">START HERE · 0 基础入门</p>
+                  <h3 id="online-learning-guide-title">什么才算 Online Learning？</h3>
+                  <p>{onlineLearningOverview.definition}</p>
+                  <ol className="online-loop" aria-label="在线学习闭环">
+                    {onlineLearningOverview.loop.map((step, index) => (
+                      <li key={step}><span>{index + 1}</span>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+
+                <div className="online-direction-grid">
+                  {onlineLearningOverview.directions.map((direction) => (
+                    <article key={direction.title}>
+                      <small>{direction.badge}</small>
+                      <h4>{direction.title}</h4>
+                      <p>{direction.description}</p>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="online-sota-strip">
+                  <div>
+                    <p className="eyebrow">SOTA SNAPSHOT · 2026-09</p>
+                    <h3>没有单一总榜，只能按子问题比较</h3>
+                  </div>
+                  <div className="online-sota-list">
+                    {onlineLearningOverview.sota.map((item) => (
+                      <p key={item.label}><strong>{item.label}</strong><span>{item.text}</span></p>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : null}
 
             <div className="reading-legend" aria-label="节点颜色图例">
               <span><i className="state-dot state-deep" /><Check />已精读</span>

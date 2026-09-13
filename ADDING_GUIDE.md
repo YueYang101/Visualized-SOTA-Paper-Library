@@ -70,4 +70,4 @@ app/data/details/anyteleop-2307-04577.ts
 
 ## 用户指定的分类结构
 
-顶层为 Grasping、Share Control、Retarget & Teleop。Grasping 内只允许跨本体泛化（`cross-embodiment`）、Robust（`robust`）、任务理解（`task-understanding`）；感知理解属于任务理解，不单独建地图。Share Control 内只允许意图融合（`intent-fusion`）和 Human Model（`human-model`）；Human Model 指根据用户动作前缀预测其最终抓取位置、姿态或抓握类型。Grasping 与 Share Control 索引分别必须带至少一项 `graspTopics`、`sharedControlTopics`，跨索引副本同步。默认全部论文显示在各自的交叠大圆中。未经用户明确要求，不添加其他分类。修改分类结构必须同时兼容已有本地 overrides 和导入备份。
+顶层为 Grasping、Share Control、Retarget & Teleop、Online Learning。Grasping 内只允许跨本体泛化（`cross-embodiment`）、Robust（`robust`）、任务理解（`task-understanding`）；感知理解属于任务理解，不单独建地图。Share Control 内只允许意图融合（`intent-fusion`）和 Human Model（`human-model`）；Human Model 指根据用户动作前缀预测其最终抓取位置、姿态或抓握类型。Online Learning 只收录部署或交互期间实际更新模型、奖励、偏好或控制参数的工作；固定模型逐帧预测属于 online inference，不能因“实时”或“online prediction”而归入。Grasping 与 Share Control 索引分别必须带至少一项 `graspTopics`、`sharedControlTopics`，跨索引副本同步。默认全部论文显示在各自的交叠大圆中。未经用户明确要求，不添加其他分类。修改分类结构必须同时兼容已有本地 overrides 和导入备份。

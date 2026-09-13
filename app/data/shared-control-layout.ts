@@ -4,7 +4,7 @@ import {
   type SharedControlTopicId,
 } from './types';
 
-export const sharedControlMapSize = { width: 1200, height: 800 };
+export const sharedControlMapSize = { width: 1600, height: 1000 };
 export const sharedControlCircles: {
   id: SharedControlTopicId;
   x: number;
@@ -13,8 +13,8 @@ export const sharedControlCircles: {
   labelX: number;
   labelY: number;
 }[] = [
-  { id: 'intent-fusion', x: 440, y: 400, r: 340, labelX: 315, labelY: 105 },
-  { id: 'human-model', x: 760, y: 400, r: 340, labelX: 885, labelY: 105 },
+  { id: 'intent-fusion', x: 500, y: 520, r: 470, labelX: 325, labelY: 105 },
+  { id: 'human-model', x: 1100, y: 520, r: 470, labelX: 1275, labelY: 105 },
 ];
 
 export function sharedControlMembershipAt(x: number, y: number): SharedControlTopicId[] {
@@ -24,9 +24,9 @@ export function sharedControlMembershipAt(x: number, y: number): SharedControlTo
 }
 
 const regionAnchors: Record<string, [number, number]> = {
-  'intent-fusion': [280, 430],
-  'human-model': [920, 430],
-  'intent-fusion|human-model': [600, 430],
+  'intent-fusion': [315, 540],
+  'human-model': [1285, 540],
+  'intent-fusion|human-model': [800, 540],
 };
 
 export function positionSharedControlPapers(papers: PaperIndex[]) {
@@ -45,8 +45,8 @@ export function positionSharedControlPapers(papers: PaperIndex[]) {
   for (const [key, group] of groups) {
     const [anchorX, anchorY] = regionAnchors[key] ?? [600, 780];
     const candidates: { x: number; y: number }[] = [];
-    for (let y = 145; y <= 680; y += 10) {
-      for (let x = 150; x <= 1050; x += 10) {
+    for (let y = 145; y <= sharedControlMapSize.height - 100; y += 10) {
+      for (let x = 150; x <= sharedControlMapSize.width - 150; x += 10) {
         const fits = [[0, 0], [-105, -28], [105, -28], [-105, 28], [105, 28]].every(
           ([dx, dy]) => sharedControlMembershipAt(x + dx, y + dy).join('|') === key,
         );
@@ -67,8 +67,8 @@ export function positionSharedControlPapers(papers: PaperIndex[]) {
         ),
       );
       const point = slot ?? {
-        x: 600,
-        y: 780 + occupied.filter((used) => used.y >= 780).length * 48,
+        x: sharedControlMapSize.width / 2,
+        y: sharedControlMapSize.height - 70 + occupied.filter((used) => used.y >= sharedControlMapSize.height - 70).length * 48,
       };
       occupied.push(point);
       positions[paper.id] = {

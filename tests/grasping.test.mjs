@@ -18,6 +18,7 @@ function loadTs(file) {
 
 const { papers } = loadTs('app/data/categories/grasping.ts');
 const { papers: sharedControlPapers } = loadTs('app/data/categories/shared-control.ts');
+const { papers: onlineLearningPapers } = loadTs('app/data/categories/online-learning.ts');
 const { graspTopicIds, sharedControlTopicIds, categoryIds } = loadTs('app/data/types.ts');
 const { categoryManifest } = loadTs('app/data/manifest.ts');
 const { graspCircles, graspMapSize, positionGraspPapers, graspMembershipAt } = loadTs('app/data/grasp-layout.ts');
@@ -25,7 +26,7 @@ const { migrateOverrides } = loadTs('app/data/classification.ts');
 const { sharedControlCircles, sharedControlMapSize, positionSharedControlPapers, sharedControlMembershipAt } = loadTs('app/data/shared-control-layout.ts');
 
 test('Grasping contains all 21 papers and exactly the three user-selected classes', () => {
-  assert.deepEqual(categoryIds, ['grasping', 'shared-control', 'retarget-teleop']);
+  assert.deepEqual(categoryIds, ['grasping', 'shared-control', 'retarget-teleop', 'online-learning']);
   assert.deepEqual(graspTopicIds, ['cross-embodiment', 'robust', 'task-understanding']);
   assert.equal(papers.length, 21);
   assert.equal(new Set(papers.map((paper) => paper.id)).size, 21);
@@ -38,7 +39,7 @@ test('Grasping contains all 21 papers and exactly the three user-selected classe
   }
 });
 
-test('map counts and cross-index memberships agree, preserving all 34 unique papers', () => {
+test('map counts and cross-index memberships agree, preserving all 41 unique papers', () => {
   const unique = new Map();
   for (const category of categoryManifest) {
     const index = loadTs(`app/data/categories/${category.id}.ts`).papers;
@@ -54,12 +55,12 @@ test('map counts and cross-index memberships agree, preserving all 34 unique pap
       unique.set(paper.id, paper);
     }
   }
-  assert.equal(unique.size, 34);
+  assert.equal(unique.size, 41);
 });
 
-test('Share Control contains exactly the two user-selected classes and all 11 papers', () => {
+test('Share Control contains exactly the two user-selected classes and all 16 papers', () => {
   assert.deepEqual(sharedControlTopicIds, ['intent-fusion', 'human-model']);
-  assert.equal(sharedControlPapers.length, 11);
+  assert.equal(sharedControlPapers.length, 16);
   for (const paper of sharedControlPapers) {
     assert.ok(paper.sharedControlTopics.length > 0);
     assert.ok(paper.sharedControlTopics.every((topic) => sharedControlTopicIds.includes(topic)));
@@ -76,6 +77,22 @@ test('Share Control contains exactly the two user-selected classes and all 11 pa
   assert.equal(sharedControlPapers.find((paper) => paper.id === 'naturalistic-exoskeleton-grasp-prediction-2019').priority, 'high');
 });
 
+test('Online Learning only contains methods that update a model or controller during interaction', () => {
+  assert.equal(onlineLearningPapers.length, 4);
+  assert.deepEqual(
+    onlineLearningPapers.map((paper) => paper.id).sort(),
+    [
+      'act2goal-rss-2026',
+      'just-right-reachability-rss-2026',
+      'online-admittance-residual-2310-10509',
+      'online-human-constraints-2403-02974',
+    ],
+  );
+  for (const paper of onlineLearningPapers) {
+    assert.ok(paper.categories.includes('online-learning'));
+  }
+});
+
 test('every Share Control paper and label fit its assigned circle without overlap', () => {
   assert.equal(sharedControlCircles.length, 2);
   const positions = positionSharedControlPapers(sharedControlPapers);
@@ -84,7 +101,7 @@ test('every Share Control paper and label fit its assigned circle without overla
     const { x: pctX, y: pctY } = positions[paper.id];
     const x = pctX / 100 * sharedControlMapSize.width;
     const y = pctY / 100 * sharedControlMapSize.height;
-    assert.ok(y < 720, `${paper.shortTitle} must stay in the two-circle map`);
+    assert.ok(y < 930, `${paper.shortTitle} must stay in the two-circle map`);
     const expected = sharedControlTopicIds.filter((topic) => paper.sharedControlTopics.includes(topic));
     for (const [dx, dy] of [[0, 0], [-105, -28], [105, -28], [-105, 28], [105, 28]]) {
       assert.deepEqual(sharedControlMembershipAt(x + dx, y + dy), expected, paper.shortTitle);

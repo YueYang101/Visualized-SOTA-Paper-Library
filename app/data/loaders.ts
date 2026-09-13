@@ -6,9 +6,25 @@ const categoryLoaders: Record<CategoryId, () => Promise<PaperIndex[]>> = {
     import('./categories/shared-control').then((module) => module.papers),
   'retarget-teleop': () =>
     import('./categories/retarget-teleop').then((module) => module.papers),
+  'online-learning': () =>
+    import('./categories/online-learning').then((module) => module.papers),
 };
 
 const detailLoaders: Record<string, () => Promise<PaperDetail>> = {
+  'online-human-constraints-2403-02974': () =>
+    import('./details/online-human-constraints-2403-02974').then((module) => module.detail),
+  'lilac-2301-02555': () =>
+    import('./details/lilac-2301-02555').then((module) => module.detail),
+  'hierarchical-intention-2403-19770': () =>
+    import('./details/hierarchical-intention-2403-19770').then((module) => module.detail),
+  'human-intent-action-review-2024': () =>
+    import('./details/human-intent-action-review-2024').then((module) => module.detail),
+  'act2goal-rss-2026': () =>
+    import('./details/act2goal-rss-2026').then((module) => module.detail),
+  'just-right-reachability-rss-2026': () =>
+    import('./details/just-right-reachability-rss-2026').then((module) => module.detail),
+  'online-admittance-residual-2310-10509': () =>
+    import('./details/online-admittance-residual-2310-10509').then((module) => module.detail),
   'shapegrasp-2403-18062': () =>
     import('./details/shapegrasp-2403-18062').then((module) => module.detail),
   'thinkgrasp-2407-11298': () =>
