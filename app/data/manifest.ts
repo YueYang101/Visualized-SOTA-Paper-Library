@@ -13,7 +13,7 @@ export const categoryManifest: CategoryManifestItem[] = [
     label: 'Share Control',
     shortLabel: 'SC',
     description: '意图融合 · Human Model',
-    count: 16,
+    count: 17,
   },
   {
     id: 'retarget-teleop',

@@ -2,6 +2,37 @@ import type { PaperIndex } from '../types';
 
 export const papers: PaperIndex[] = [
   {
+    id: 'dexgen-2502-04307',
+    title: 'DexterityGen: Foundation Controller for Unprecedented Dexterity',
+    shortTitle: 'DexGen',
+    paperUrl: 'https://arxiv.org/abs/2502.04307',
+    authors: [
+      'Zhao-Heng Yin',
+      'Changhao Wang',
+      'Luis Pineda',
+      'Francois Hogan',
+      'Krishna Bodduluri',
+      'Akash Sharma',
+      'Patrick Lancaster',
+      'Ishita Prasad',
+      'Mrinal Kalakrishnan',
+      'Jitendra Malik',
+      'Mike Lambeta',
+      'Tingfan Wu',
+      'Pieter Abbeel',
+      'Mustafa Mukadam',
+    ],
+    year: 2025,
+    venue: 'RSS 2025',
+    categories: ['shared-control'],
+    sharedControlTopics: ['intent-fusion'],
+    priority: 'very-high',
+    deepRead: { completed: false, needed: true },
+    tags: ['扩散动作先验', 'RL生成数据', '遥操作引导', '逆动力学', '接触执行'],
+    oneMinute:
+      '先用仿真 RL 生成旋转、平移和抓法转换轨迹，再训练 diffusion 动作先验与逆动力学模型；部署时以人的粗动作引导采样，将运动参考变成机器人关节命令。是 Stage 1.3“人给意图、低层管接触”的重点参考，但不等于 Stage 1.2 的未来抓姿预测，也没有核验可直接用于 L20 的完整权重。',
+  },
+  {
     id: 'dex-vla-shared-autonomy-2511-00139',
     title:
       'End-to-End Dexterous Arm-Hand VLA Policies via Shared Autonomy: VR Teleoperation Augmented by Autonomous Hand VLA Policy for Efficient Data Collection',
