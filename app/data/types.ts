@@ -11,6 +11,10 @@ export const graspTopicIds = ['cross-embodiment', 'robust', 'task-understanding'
 
 export type GraspTopicId = (typeof graspTopicIds)[number];
 
+export const sharedControlTopicIds = ['intent-fusion', 'human-model'] as const;
+
+export type SharedControlTopicId = (typeof sharedControlTopicIds)[number];
+
 export interface DeepReadState {
   completed: boolean;
   needed: boolean;
@@ -26,6 +30,7 @@ export interface PaperIndex {
   venue: string;
   categories: CategoryId[];
   graspTopics?: GraspTopicId[];
+  sharedControlTopics?: SharedControlTopicId[];
   priority: Priority;
   deepRead: DeepReadState;
   tags: string[];
@@ -99,12 +104,19 @@ export interface GraspTopicManifestItem {
   description: string;
 }
 
+export interface SharedControlTopicManifestItem {
+  id: SharedControlTopicId;
+  label: string;
+  shortLabel: string;
+  description: string;
+}
+
 export interface PaperOverride {
   original: PaperIndex;
   changes: Partial<
     Pick<
       PaperIndex,
-      'categories' | 'graspTopics' | 'priority' | 'deepRead' | 'tags'
+      'categories' | 'graspTopics' | 'sharedControlTopics' | 'priority' | 'deepRead' | 'tags'
     >
   >;
   updatedAt: string;

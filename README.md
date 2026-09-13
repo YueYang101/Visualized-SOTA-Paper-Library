@@ -3,10 +3,10 @@
 这是一个本地使用的论文知识地图。目前有三张主地图：
 
 - **Grasping**：仅分为 **跨本体泛化 / Robust / 任务理解**；感知理解归入任务理解
-- **Share Control**：人机意图融合、仲裁与辅助控制
+- **Share Control**：仅分为 **意图融合 / Human Model**
 - **Retarget & Teleop**：动作重定向、遥操作与具身映射
 
-一篇论文可以同时属于多张地图。优先级为 **极高 / 高 / 中 / 低**，节点越大优先级越高；Grasping 的位置表示三类的归属和交集，其他地图保留优先级同心环；节点颜色和文字表示精读状态。
+一篇论文可以同时属于多张地图。优先级为 **极高 / 高 / 中 / 低**，节点越大优先级越高；Grasping 与 Share Control 的位置表示分类归属和交集，Retarget & Teleop 保留优先级同心环；节点颜色和文字表示精读状态。
 
 ## Grasping 三圆图（2026-09-12 按用户要求修正）
 
@@ -20,7 +20,7 @@ Grasping 默认同时显示全部 21 篇论文，三个相交大圆分别为 **�
 
 ## 当前内容
 
-目前共收录 **31 篇**论文：3 篇已有精读记录，28 篇为待精读的论文预读与研究方案。“SOTA”是随时间变化的筛选判断，不代表永久排名。
+目前共收录 **34 篇**论文：3 篇已有精读记录，31 篇为待精读的论文预读与研究方案。“SOTA”是随时间变化的筛选判断，不代表永久排名。
 
 已有精读记录：
 
@@ -37,7 +37,7 @@ Grasping 默认同时显示全部 21 篇论文，三个相交大圆分别为 **�
 本轮 SOTA / 强基线预读：
 
 - **Grasping**：Grasp-to-Act、ClutterDexGrasp、Shear-based Grasp Control、TacDexGrasp、Shared Bionic Hand、DexGraspNet、UniDexGrasp++、GenDexGrasp、D(R,O) Grasp、CrossDex、AnyDexGrasp、GraspXL、DexGrasp-Zero、DexGraspNet 2.0
-- **Share Control**：To the Noise and Back、IDA、FlashBack、VOSA、Shared Bionic Hand、TeleDexter
+- **Share Control**：To the Noise and Back、IDA、FlashBack、VOSA、Shared Bionic Hand、TeleDexter、VLM Intent Assistance、Dex-VLA Shared Autonomy，以及三篇 Human Model 论文
 - **Retarget & Teleop**：AnyDexRT、TeleDexter、DexUMI、Bunny-VisionPro、CrossDex、DexGrasp-Zero
 
 其中 Shared Bionic Hand 同属 Grasping 与 Share Control；TeleDexter 同属 Share Control 与 Retarget & Teleop；CrossDex、DexGrasp-Zero 同属 Grasping 与 Retarget & Teleop。多分类只重复轻量索引，完整详情仍只有一份。
@@ -53,6 +53,14 @@ Grasping 默认同时显示全部 21 篇论文，三个相交大圆分别为 **�
 - **VLM Intent Assistance**：VLM 语义先验与 GUIDER 意图概率融合，同时归入 Share Control。
 
 五篇均标为“待精读”；卡片注明预读范围和未核验事项。VLM Intent Assistance 是待验证的扩展摘要，其计划实验不作为已完成结果。使用场景：让语义模块提出可能抓法，结合 Quest 轨迹与解码手形推断用户偏好，再由抓取模型检验可行性并执行。
+
+## Share Control 双圆图（2026-09-13 按用户要求新增）
+
+Share Control 默认同时显示全部 11 篇论文，只保留 **意图融合（8）／Human Model（3）** 两类。两个大圆允许论文同时归属；当前三篇新增的人类抓取预测论文只属于 Human Model，原有 8 篇属于意图融合。
+
+Human Model 的边界是：根据用户已经发生的动作前缀，预测其最终抓取位置、姿态或抓握类型。当前三篇为 Motion Prior Field（高）、Gaze-Guided Hand Motion（中）、Naturalistic Grasp Prediction（高）。其中 Motion Prior Field 更接近“抓在哪里”，Naturalistic Grasp Prediction 更接近“怎样抓”，Gaze-Guided Hand Motion 则预测未来完整手部序列。
+
+**分类约束：未经用户明确要求，不新增 Share Control 子分类。** 两圆归属、优先级和布局由同一测试检查。
 
 ## Grasping 当前格局（2026-09）
 

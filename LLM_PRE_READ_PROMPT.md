@@ -63,3 +63,7 @@ JSON 后再用简短中文解释：为什么这样分类、为什么是这个优
 ## 用户指定的 Grasping 分类（2026-09-12）
 
 `graspTopics` 只能使用 `cross-embodiment`（跨本体泛化）、`robust`（Robust）、`task-understanding`（任务理解，含感知理解）。Grasping 论文至少选择一项，可多选；按实际研究内容归类。不得自行增加顶层“感知理解”或位姿、场景、闭环、稳定等子分类。技术关键词可作 tags；跨物体泛化不等于跨本体泛化，空间抓取条件也不自动等于任务语义理解。
+
+## 用户指定的 Share Control 分类（2026-09-13）
+
+`sharedControlTopics` 只能使用 `intent-fusion`（意图融合）和 `human-model`（Human Model）。Human Model 指从用户已经发生的动作前缀预测其最终抓取位置、姿态或抓握类型；意图融合指把用户输入、意图估计与机器人策略结合为仲裁、辅助或低层执行。Share Control 论文至少选择一项，可多选，不得自行增加其他子分类。

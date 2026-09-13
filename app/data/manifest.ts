@@ -12,8 +12,8 @@ export const categoryManifest: CategoryManifestItem[] = [
     id: 'shared-control',
     label: 'Share Control',
     shortLabel: 'SC',
-    description: '人机意图融合、仲裁与辅助控制',
-    count: 8,
+    description: '意图融合 · Human Model',
+    count: 11,
   },
   {
     id: 'retarget-teleop',

@@ -18,6 +18,7 @@ export const papers: PaperIndex[] = [
     year: 2025,
     venue: 'arXiv 2025 · v2',
     categories: ['shared-control', 'retarget-teleop'],
+    sharedControlTopics: ['intent-fusion'],
     priority: 'high',
     deepRead: { completed: true, needed: false },
     tags: ['共享自主采集', '触觉VLA', 'Arm–Hand分支', '纠错遥操作', '协同示教'],
@@ -107,6 +108,7 @@ export const papers: PaperIndex[] = [
     year: 2026,
     venue: 'arXiv 2026 · v1',
     categories: ['shared-control', 'retarget-teleop'],
+    sharedControlTopics: ['intent-fusion'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [

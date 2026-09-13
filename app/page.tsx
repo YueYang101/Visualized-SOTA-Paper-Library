@@ -63,8 +63,15 @@ import { graspTopicManifest } from './data/grasp-topics';
 import { categoryManifest } from './data/manifest';
 import { loadCategory, loadPaperDetail } from './data/loaders';
 import {
+  positionSharedControlPapers,
+  sharedControlCircles,
+  sharedControlMapSize,
+} from './data/shared-control-layout';
+import { sharedControlTopicManifest } from './data/shared-control-topics';
+import {
   categoryIds,
   graspTopicIds,
+  sharedControlTopicIds,
   type CategoryId,
   type GraspTopicId,
   type LocalStore,
@@ -72,6 +79,7 @@ import {
   type PaperIndex,
   type PaperOverride,
   type Priority,
+  type SharedControlTopicId,
 } from './data/types';
 
 const STORAGE_KEY = 'literature-atlas:overrides:v1';
@@ -177,6 +185,10 @@ function isGraspTopicId(value: unknown): value is GraspTopicId {
   return typeof value === 'string' && graspTopicIds.includes(value as GraspTopicId);
 }
 
+function isSharedControlTopicId(value: unknown): value is SharedControlTopicId {
+  return typeof value === 'string' && sharedControlTopicIds.includes(value as SharedControlTopicId);
+}
+
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState<CategoryId>('grasping');
   const [loadedCategories, setLoadedCategories] = useState<Partial<Record<CategoryId, PaperIndex[]>>>({});
@@ -259,6 +271,8 @@ export default function Home() {
               ...existing,
               ...paper,
               graspTopics: paper.graspTopics ?? existing?.graspTopics,
+              sharedControlTopics:
+                paper.sharedControlTopics ?? existing?.sharedControlTopics,
             };
           });
           return next;
@@ -305,12 +319,18 @@ export default function Home() {
       .sort((left, right) => priorities.indexOf(left.priority) - priorities.indexOf(right.priority));
   }, [activeCategory, mergedPapers, priorityFilter, query, readingFilter]);
 
-  const visiblePapers = useMemo(() => activeCategory === 'grasping' ? filteredPapers : filteredPapers.slice(0, renderLimit), [activeCategory, filteredPapers, renderLimit]);
+  const isSetMap = activeCategory === 'grasping' || activeCategory === 'shared-control';
+  const visiblePapers = useMemo(() => isSetMap ? filteredPapers : filteredPapers.slice(0, renderLimit), [filteredPapers, isSetMap, renderLimit]);
   const allGraspPapers = useMemo(() => mergedPapers.filter((paper) => paper.categories.includes('grasping')), [mergedPapers]);
+  const allSharedControlPapers = useMemo(() => mergedPapers.filter((paper) => paper.categories.includes('shared-control')), [mergedPapers]);
   const emphasizedPaperId = hoveredPaperId ?? focusedPaperId;
   const nodePositions = useMemo(
-    () => activeCategory === 'grasping' ? positionGraspPapers(allGraspPapers) : positionPapers(visiblePapers, zoom),
-    [activeCategory, allGraspPapers, visiblePapers, zoom],
+    () => {
+      if (activeCategory === 'grasping') return positionGraspPapers(allGraspPapers);
+      if (activeCategory === 'shared-control') return positionSharedControlPapers(allSharedControlPapers);
+      return positionPapers(visiblePapers, zoom);
+    },
+    [activeCategory, allGraspPapers, allSharedControlPapers, visiblePapers, zoom],
   );
 
   const edges = useMemo(() => {
@@ -347,6 +367,16 @@ export default function Home() {
     ) as Record<GraspTopicId, number>;
   }, [mergedPapers]);
 
+  const sharedControlTopicCounts = useMemo(() => {
+    const sharedControlPapers = mergedPapers.filter((paper) => paper.categories.includes('shared-control'));
+    return Object.fromEntries(
+      sharedControlTopicManifest.map((topic) => [
+        topic.id,
+        sharedControlPapers.filter((paper) => paper.sharedControlTopics?.includes(topic.id)).length,
+      ]),
+    ) as Record<SharedControlTopicId, number>;
+  }, [mergedPapers]);
+
   const selectedPaper = selectedPaperId
     ? mergedPapers.find((paper) => paper.id === selectedPaperId) ?? null
     : null;
@@ -359,6 +389,9 @@ export default function Home() {
     const nextPaper = { ...currentPaper, ...changes };
     if (nextPaper.categories.includes('grasping') && !nextPaper.graspTopics?.length && (changes.graspTopics !== undefined || (changes.categories && !currentPaper.categories.includes('grasping')))) {
       throw new Error('请至少选择跨本体泛化、Robust、任务理解中的一项。');
+    }
+    if (nextPaper.categories.includes('shared-control') && !nextPaper.sharedControlTopics?.length && (changes.sharedControlTopics !== undefined || (changes.categories && !currentPaper.categories.includes('shared-control')))) {
+      throw new Error('请至少选择意图融合、Human Model 中的一项。');
     }
     const existing = overrides[id];
     const nextOverride: PaperOverride = {
@@ -413,6 +446,11 @@ export default function Home() {
       setNotice('请在详情中选择 Grasping 的三项分类之一，即可加入。');
       return;
     }
+    if (category === 'shared-control' && !paper.sharedControlTopics?.length) {
+      openPaper(paper);
+      setNotice('请在详情中选择 Share Control 的两项分类之一，即可加入。');
+      return;
+    }
     updatePaper(paperId, { categories: [...paper.categories, category] });
     setNotice(`已把《${paper.shortTitle}》加入 ${categoryManifest.find((item) => item.id === category)?.label}。`);
   };
@@ -429,6 +467,10 @@ export default function Home() {
     if (!selectedPaper) return;
     if (checked && category === 'grasping' && !selectedPaper.graspTopics?.length) {
       setNotice('请先在下方选择跨本体泛化、Robust、任务理解中的至少一项。');
+      return;
+    }
+    if (checked && category === 'shared-control' && !selectedPaper.sharedControlTopics?.length) {
+      setNotice('请先在下方选择意图融合、Human Model 中的至少一项。');
       return;
     }
     let categories = selectedPaper.categories;
@@ -452,6 +494,22 @@ export default function Home() {
       return;
     }
     updatePaper(selectedPaper.id, { graspTopics: nextTopics, categories: Array.from(new Set([...selectedPaper.categories, 'grasping' as const])) });
+  };
+
+  const togglePaperSharedControlTopic = (topic: SharedControlTopicId) => {
+    if (!selectedPaper) return;
+    const topics = selectedPaper.sharedControlTopics ?? [];
+    const nextTopics = topics.includes(topic)
+      ? topics.filter((item) => item !== topic)
+      : [...topics, topic];
+    if (!nextTopics.length && selectedPaper.categories.includes('shared-control')) {
+      setNotice('Share Control 论文至少保留一项分类；也可以取消所属 Share Control 地图。');
+      return;
+    }
+    updatePaper(selectedPaper.id, {
+      sharedControlTopics: nextTopics,
+      categories: Array.from(new Set([...selectedPaper.categories, 'shared-control' as const])),
+    });
   };
 
   const addTag = (rawTag: string) => {
@@ -521,6 +579,7 @@ export default function Home() {
           priority: paper.priority,
           deepRead: paper.deepRead,
           graspTopics: paper.graspTopics,
+          sharedControlTopics: paper.sharedControlTopics,
           tags: paper.tags,
         })),
       }),
@@ -546,13 +605,14 @@ export default function Home() {
       void Promise.resolve(context.registerTool({
         name: 'update_literature_paper',
         title: '更新论文地图信息',
-        description: '更新一篇已加载论文的地图分类、Grasping 分类、优先级、精读状态或标签，并同步到可见界面和本地存储。',
+        description: '更新一篇已加载论文的地图分类、Grasping／Share Control 分类、优先级、精读状态或标签，并同步到可见界面和本地存储。',
         inputSchema: {
           type: 'object',
           properties: {
             id: { type: 'string' },
             categories: { type: 'array', items: { type: 'string', enum: categoryIds } },
             graspTopics: { type: 'array', items: { type: 'string', enum: graspTopicIds } },
+            sharedControlTopics: { type: 'array', items: { type: 'string', enum: sharedControlTopicIds } },
             priority: { type: 'string', enum: priorities },
             completed: { type: 'boolean' },
             needed: { type: 'boolean' },
@@ -582,6 +642,12 @@ export default function Home() {
               throw new Error('Grasping 分类无效。');
             }
             changes.graspTopics = Array.from(new Set(value.graspTopics));
+          }
+          if (value.sharedControlTopics !== undefined) {
+            if (!Array.isArray(value.sharedControlTopics) || !value.sharedControlTopics.every(isSharedControlTopicId)) {
+              throw new Error('Share Control 分类无效。');
+            }
+            changes.sharedControlTopics = Array.from(new Set(value.sharedControlTopics));
           }
           if (value.tags !== undefined) {
             if (!Array.isArray(value.tags) || value.tags.length > 8 || !value.tags.every((tag) => typeof tag === 'string' && tag.trim().length > 0 && tag.length <= 24)) {
@@ -671,7 +737,7 @@ export default function Home() {
           </TabsList>
 
           <div className="priority-key">
-            <p>{activeCategory === 'grasping' ? '优先级 · 节点越大越高' : '优先级 · 越靠中心越高'}</p>
+            <p>{isSetMap ? '优先级 · 节点越大越高' : '优先级 · 越靠中心越高'}</p>
             {priorities.map((priority) => (
               <span key={priority}>
                 <i className={`priority-dot priority-${priority}`} />
@@ -715,7 +781,7 @@ export default function Home() {
                   </Select>
                 </div>
                 <div className="view-switch" aria-label="切换视图">
-                  <Button size="icon" variant={viewMode === 'graph' ? 'secondary' : 'ghost'} onClick={() => setViewMode('graph')} aria-label={activeCategory === 'grasping' ? 'Grasping 三圆图' : '蛛网图'} aria-pressed={viewMode === 'graph'}><Network /></Button>
+                  <Button size="icon" variant={viewMode === 'graph' ? 'secondary' : 'ghost'} onClick={() => setViewMode('graph')} aria-label={activeCategory === 'grasping' ? 'Grasping 三圆图' : activeCategory === 'shared-control' ? 'Share Control 双圆图' : '蛛网图'} aria-pressed={viewMode === 'graph'}><Network /></Button>
                   <Button size="icon" variant={viewMode === 'list' ? 'secondary' : 'ghost'} onClick={() => setViewMode('list')} aria-label="文章列表" aria-pressed={viewMode === 'list'}><List /></Button>
                 </div>
               </div>
@@ -743,13 +809,13 @@ export default function Home() {
                 {(query || priorityFilter !== 'all' || readingFilter !== 'all') && <Button variant="outline" onClick={() => { setQuery(''); setPriorityFilter('all'); setReadingFilter('all'); }}>清除筛选</Button>}
               </div>
             ) : viewMode === 'graph' ? (
-              <div className={`graph-canvas${activeCategory === 'grasping' ? ' grasp-canvas' : ''}`} tabIndex={activeCategory === 'grasping' ? 0 : undefined} role={activeCategory === 'grasping' ? 'region' : undefined} aria-label={activeCategory === 'grasping' ? 'Grasping 全部论文：跨本体泛化、Robust、任务理解三圆图，可横向滚动' : undefined}>
-                {activeCategory !== 'grasping' && <div className="zoom-controls">
+              <div className={`graph-canvas${isSetMap ? ' grasp-canvas' : ''}`} tabIndex={isSetMap ? 0 : undefined} role={isSetMap ? 'region' : undefined} aria-label={activeCategory === 'grasping' ? 'Grasping 全部论文：跨本体泛化、Robust、任务理解三圆图，可横向滚动' : activeCategory === 'shared-control' ? 'Share Control 全部论文：意图融合、Human Model 双圆图，可横向滚动' : undefined}>
+                {!isSetMap && <div className="zoom-controls">
                   <Button size="icon-sm" variant="ghost" onClick={() => setZoom((value) => Math.max(.7, Number((value - .1).toFixed(2))))} aria-label="缩小节点间距"><ZoomOut /></Button>
                   <span>{Math.round(zoom * 100)}%</span>
                   <Button size="icon-sm" variant="ghost" onClick={() => setZoom((value) => Math.min(1.15, Number((value + .1).toFixed(2))))} aria-label="放大节点间距"><ZoomIn /></Button>
                 </div>}
-                <div className={`graph-space${activeCategory === 'grasping' ? ' grasp-space' : ''}${emphasizedPaperId ? ' is-emphasizing' : ''}`}>
+                <div className={`graph-space${isSetMap ? ' grasp-space' : ''}${activeCategory === 'shared-control' ? ' shared-control-space' : ''}${emphasizedPaperId ? ' is-emphasizing' : ''}`}>
                   {activeCategory === 'grasping' ? <>
                     <svg className="grasp-venn" viewBox={`0 0 ${graspMapSize.width} ${graspMapSize.height}`} aria-hidden="true">
                       {graspCircles.map((circle) => <circle key={circle.id} className={`grasp-ring topic-${circle.id}`} cx={circle.x} cy={circle.y} r={circle.r} />)}
@@ -757,6 +823,14 @@ export default function Home() {
                     {graspCircles.map((circle) => <div key={circle.id} className={`grasp-circle-label topic-${circle.id}`} style={{ left: `${circle.labelX / graspMapSize.width * 100}%`, top: `${circle.labelY / graspMapSize.height * 100}%` }}>
                       <strong>{graspTopicManifest.find((topic) => topic.id === circle.id)?.label}</strong>
                       <span>{graspTopicCounts[circle.id]} 篇</span>
+                    </div>)}
+                  </> : activeCategory === 'shared-control' ? <>
+                    <svg className="grasp-venn" viewBox={`0 0 ${sharedControlMapSize.width} ${sharedControlMapSize.height}`} aria-hidden="true">
+                      {sharedControlCircles.map((circle) => <circle key={circle.id} className={`grasp-ring topic-${circle.id}`} cx={circle.x} cy={circle.y} r={circle.r} />)}
+                    </svg>
+                    {sharedControlCircles.map((circle) => <div key={circle.id} className={`grasp-circle-label topic-${circle.id}`} style={{ left: `${circle.labelX / sharedControlMapSize.width * 100}%`, top: `${circle.labelY / sharedControlMapSize.height * 100}%` }}>
+                      <strong>{sharedControlTopicManifest.find((topic) => topic.id === circle.id)?.label}</strong>
+                      <span>{sharedControlTopicCounts[circle.id]} 篇</span>
                     </div>)}
                   </> : <>
                   <div className="orbit orbit-very-high" style={{ scale: zoom }}><span>极高</span></div>
@@ -785,7 +859,7 @@ export default function Home() {
                               draggable
                               className={`paper-node state-${reading.key}${emphasizedPaperId === paper.id ? ' is-highlighted' : ''}${emphasizedPaperId && emphasizedPaperId !== paper.id ? ' is-dimmed' : ''}${position.x > 70 ? ' label-left' : ''}`}
                               style={{ left: `${position.x}%`, top: `${position.y}%`, '--node-size': `${size}px` } as CSSProperties}
-                              aria-label={`打开 ${paper.shortTitle}：${priorityLabels[paper.priority]}优先级，${reading.label}${activeCategory === 'grasping' ? `；${graspTopicManifest.filter((topic) => paper.graspTopics?.includes(topic.id)).map((topic) => topic.label).join('、')}` : ''}`}
+                              aria-label={`打开 ${paper.shortTitle}：${priorityLabels[paper.priority]}优先级，${reading.label}${activeCategory === 'grasping' ? `；${graspTopicManifest.filter((topic) => paper.graspTopics?.includes(topic.id)).map((topic) => topic.label).join('、')}` : activeCategory === 'shared-control' ? `；${sharedControlTopicManifest.filter((topic) => paper.sharedControlTopics?.includes(topic.id)).map((topic) => topic.label).join('、')}` : ''}`}
                               onMouseEnter={() => setHoveredPaperId(paper.id)}
                               onMouseLeave={() => setHoveredPaperId((current) => current === paper.id ? null : current)}
                               onFocus={() => setFocusedPaperId(paper.id)}
@@ -820,8 +894,8 @@ export default function Home() {
                     );
                   })}
                 </div>
-                <div className="graph-note">{activeCategory === 'grasping' ? '全部论文同图展示 · 交叠区域表示同时归属 · 每篇只显示一次' : '同级论文沿环均匀排布 · 悬停突出当前论文与相关连线 · ＋／－ 调整节点间距'}</div>
-                {activeCategory !== 'grasping' && filteredPapers.length > renderLimit && <Button className="load-more" variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
+                <div className="graph-note">{isSetMap ? '全部论文同图展示 · 交叠区域表示同时归属 · 每篇只显示一次' : '同级论文沿环均匀排布 · 悬停突出当前论文与相关连线 · ＋／－ 调整节点间距'}</div>
+                {!isSetMap && filteredPapers.length > renderLimit && <Button className="load-more" variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
               </div>
             ) : (
               <ul className="paper-list">
@@ -839,7 +913,7 @@ export default function Home() {
                     </li>
                   );
                 })}
-                {activeCategory !== 'grasping' && filteredPapers.length > renderLimit && <Button variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
+                {!isSetMap && filteredPapers.length > renderLimit && <Button variant="outline" onClick={() => setRenderLimit((value) => value + 150)}>再加载 150 篇</Button>}
               </ul>
             )}
           </TabsContent>
@@ -925,6 +999,27 @@ export default function Home() {
                       </div>
                     </section>
                   )}
+
+                  <section className="detail-section">
+                    <p className="section-label">Share Control 分类（仅这两项，可多选）</p>
+                    <div className="detail-topic-circles">
+                      {sharedControlTopicManifest.map((topic) => {
+                        const active = selectedPaper.sharedControlTopics?.includes(topic.id) ?? false;
+                        return (
+                          <button
+                            key={topic.id}
+                            type="button"
+                            className={`topic-${topic.id}${active ? ' is-active' : ''}`}
+                            aria-pressed={active}
+                            title={topic.description}
+                            onClick={() => togglePaperSharedControlTopic(topic.id)}
+                          >
+                            <span>{topic.shortLabel}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
 
                   <section className="detail-section">
                     <p className="section-label">帮助回忆的标签 <span>{selectedPaper.tags.length}/8</span></p>

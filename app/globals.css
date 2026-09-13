@@ -500,9 +500,13 @@ h2 { font-size: clamp(1.65rem, 2.5vw, 2.25rem); }
 .topic-cross-embodiment { --topic: #bda0f5; }
 .topic-robust { --topic: #62d6bf; }
 .topic-task-understanding { --topic: #f5bb6b; }
+.topic-intent-fusion { --topic: #62d6bf; }
+.topic-human-model { --topic: #f5bb6b; }
 .grasp-canvas { height: auto; min-height: 0; overflow: auto; scrollbar-width: thin; }
 .grasp-canvas:focus-visible { outline: 2px solid #62d6bf; outline-offset: 3px; }
 .grasp-space { position: relative; inset: auto; width: 100%; min-width: 900px; aspect-ratio: 1200 / 1050; container-type: inline-size; }
+.grasp-space.shared-control-space { aspect-ratio: 1200 / 800; }
+.grasp-space.shared-control-space .paper-node { width: 17%; height: 7%; }
 .grasp-venn { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .grasp-ring { fill: color-mix(in srgb, var(--topic) 7%, transparent); stroke: var(--topic); stroke-opacity: .6; stroke-width: 2; }
 .grasp-circle-label { position: absolute; z-index: 2; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 5px; color: var(--topic); pointer-events: none; }
@@ -522,6 +526,8 @@ h2 { font-size: clamp(1.65rem, 2.5vw, 2.25rem); }
 .detail-topic-circles button.topic-cross-embodiment { --topic: #bda0f5; }
 .detail-topic-circles button.topic-robust { --topic: #62d6bf; }
 .detail-topic-circles button.topic-task-understanding { --topic: #f5bb6b; }
+.detail-topic-circles button.topic-intent-fusion { --topic: #62d6bf; }
+.detail-topic-circles button.topic-human-model { --topic: #f5bb6b; }
 @media (prefers-reduced-motion: reduce) {
   .grasp-space .paper-node, .grasp-space .node-title, .grasp-space .edge-layer line { transition: none; }
 }

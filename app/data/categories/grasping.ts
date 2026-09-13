@@ -162,6 +162,7 @@ export const papers: PaperIndex[] = [
     venue: 'Nature Communications · 2025',
     categories: ['grasping', 'shared-control'],
     graspTopics: ['robust'],
+    sharedControlTopics: ['intent-fusion'],
     priority: 'very-high',
     deepRead: { completed: false, needed: true },
     tags: [
@@ -546,6 +547,7 @@ export const papers: PaperIndex[] = [
     venue: 'arXiv 2025 · 扩展摘要／待验证方案',
     categories: ['grasping', 'shared-control'],
     graspTopics: ['task-understanding'],
+    sharedControlTopics: ['intent-fusion'],
     priority: 'medium',
     deepRead: { completed: false, needed: true },
     tags: ['VLM语义先验', '概率意图推断', '共享自主', '待验证方案'],

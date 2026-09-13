@@ -17,10 +17,12 @@ function loadTs(file) {
 }
 
 const { papers } = loadTs('app/data/categories/grasping.ts');
-const { graspTopicIds, categoryIds } = loadTs('app/data/types.ts');
+const { papers: sharedControlPapers } = loadTs('app/data/categories/shared-control.ts');
+const { graspTopicIds, sharedControlTopicIds, categoryIds } = loadTs('app/data/types.ts');
 const { categoryManifest } = loadTs('app/data/manifest.ts');
 const { graspCircles, graspMapSize, positionGraspPapers, graspMembershipAt } = loadTs('app/data/grasp-layout.ts');
 const { migrateOverrides } = loadTs('app/data/classification.ts');
+const { sharedControlCircles, sharedControlMapSize, positionSharedControlPapers, sharedControlMembershipAt } = loadTs('app/data/shared-control-layout.ts');
 
 test('Grasping contains all 21 papers and exactly the three user-selected classes', () => {
   assert.deepEqual(categoryIds, ['grasping', 'shared-control', 'retarget-teleop']);
@@ -36,7 +38,7 @@ test('Grasping contains all 21 papers and exactly the three user-selected classe
   }
 });
 
-test('map counts and cross-index memberships agree, preserving all 31 unique papers', () => {
+test('map counts and cross-index memberships agree, preserving all 34 unique papers', () => {
   const unique = new Map();
   for (const category of categoryManifest) {
     const index = loadTs(`app/data/categories/${category.id}.ts`).papers;
@@ -47,11 +49,52 @@ test('map counts and cross-index memberships agree, preserving all 31 unique pap
       if (unique.has(paper.id)) {
         assert.deepEqual(paper.categories, unique.get(paper.id).categories);
         assert.deepEqual(paper.graspTopics, unique.get(paper.id).graspTopics);
+        assert.deepEqual(paper.sharedControlTopics, unique.get(paper.id).sharedControlTopics);
       }
       unique.set(paper.id, paper);
     }
   }
-  assert.equal(unique.size, 31);
+  assert.equal(unique.size, 34);
+});
+
+test('Share Control contains exactly the two user-selected classes and all 11 papers', () => {
+  assert.deepEqual(sharedControlTopicIds, ['intent-fusion', 'human-model']);
+  assert.equal(sharedControlPapers.length, 11);
+  for (const paper of sharedControlPapers) {
+    assert.ok(paper.sharedControlTopics.length > 0);
+    assert.ok(paper.sharedControlTopics.every((topic) => sharedControlTopicIds.includes(topic)));
+  }
+  for (const id of [
+    'motion-prior-field-grasp-prediction-2023',
+    'gaze-guided-hand-motion-prediction-2504-01024',
+    'naturalistic-exoskeleton-grasp-prediction-2019',
+  ]) {
+    assert.deepEqual(sharedControlPapers.find((paper) => paper.id === id).sharedControlTopics, ['human-model']);
+  }
+  assert.equal(sharedControlPapers.find((paper) => paper.id === 'motion-prior-field-grasp-prediction-2023').priority, 'high');
+  assert.equal(sharedControlPapers.find((paper) => paper.id === 'gaze-guided-hand-motion-prediction-2504-01024').priority, 'medium');
+  assert.equal(sharedControlPapers.find((paper) => paper.id === 'naturalistic-exoskeleton-grasp-prediction-2019').priority, 'high');
+});
+
+test('every Share Control paper and label fit its assigned circle without overlap', () => {
+  assert.equal(sharedControlCircles.length, 2);
+  const positions = positionSharedControlPapers(sharedControlPapers);
+  const boxes = [];
+  for (const paper of sharedControlPapers) {
+    const { x: pctX, y: pctY } = positions[paper.id];
+    const x = pctX / 100 * sharedControlMapSize.width;
+    const y = pctY / 100 * sharedControlMapSize.height;
+    assert.ok(y < 720, `${paper.shortTitle} must stay in the two-circle map`);
+    const expected = sharedControlTopicIds.filter((topic) => paper.sharedControlTopics.includes(topic));
+    for (const [dx, dy] of [[0, 0], [-105, -28], [105, -28], [-105, 28], [105, 28]]) {
+      assert.deepEqual(sharedControlMembershipAt(x + dx, y + dy), expected, paper.shortTitle);
+    }
+    for (const previous of boxes) {
+      assert.ok(Math.abs(previous.x - x) >= 210 || Math.abs(previous.y - y) >= 58, `${previous.id} overlaps ${paper.id}`);
+    }
+    boxes.push({ x, y, id: paper.id });
+  }
+  assert.deepEqual(positionSharedControlPapers([...sharedControlPapers].reverse()), positions);
 });
 
 test('every paper and its label fit the right circles, without overlapping labels', () => {

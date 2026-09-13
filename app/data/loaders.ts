@@ -93,6 +93,18 @@ const detailLoaders: Record<string, () => Promise<PaperDetail>> = {
     ),
   'dexgraspnet2-2410-23004': () =>
     import('./details/dexgraspnet2-2410-23004').then((module) => module.detail),
+  'motion-prior-field-grasp-prediction-2023': () =>
+    import('./details/motion-prior-field-grasp-prediction-2023').then(
+      (module) => module.detail,
+    ),
+  'gaze-guided-hand-motion-prediction-2504-01024': () =>
+    import('./details/gaze-guided-hand-motion-prediction-2504-01024').then(
+      (module) => module.detail,
+    ),
+  'naturalistic-exoskeleton-grasp-prediction-2019': () =>
+    import('./details/naturalistic-exoskeleton-grasp-prediction-2019').then(
+      (module) => module.detail,
+    ),
 };
 
 export function loadCategory(id: CategoryId) {
