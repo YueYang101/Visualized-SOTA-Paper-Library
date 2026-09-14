@@ -2,6 +2,26 @@ import type { PaperIndex } from '../types';
 
 export const papers: PaperIndex[] = [
   {
+    id: 'wheelchair-bimanual-11217797',
+    title:
+      'Toward Shared Control for Mobile Bimanual Manipulation on a Robotic Wheelchair',
+    shortTitle: 'Bimanual Wheelchair',
+    paperUrl: 'https://doi.org/10.1109/RO-MAN63969.2025.11217797',
+    authors: ['Rohan Gandhi', 'Fernando Estévez Casado', 'Yiannis Demiris'],
+    year: 2025,
+    venue: 'IEEE RO-MAN 2025 · pp. 851–856',
+    categories: ['shared-control'],
+    sharedControlTopics: ['intent-fusion'],
+    priority: 'high',
+    deepRead: {
+      completed: false,
+      needed: true,
+    },
+    tags: ['二维摇杆', '双臂轮椅', '任务阶段仲裁', '预抓取对齐', '移动操作'],
+    oneMinute:
+      '用二维摇杆控制轮椅和双臂：视觉结合用户输入判断目标，先辅助底盘正面对齐并在行进中预伸臂，再通过操作模式与任务阶段仲裁完成抓取、抬升和收回。适合借鉴低维意图到高维执行的分工；目前依据作者摘要与补充视频预读，全文公式和定量结果待核验。',
+  },
+  {
     id: 'dexgen-2502-04307',
     title: 'DexterityGen: Foundation Controller for Unprecedented Dexterity',
     shortTitle: 'DexGen',

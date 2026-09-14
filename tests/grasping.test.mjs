@@ -39,7 +39,7 @@ test('Grasping contains all 21 papers and exactly the three user-selected classe
   }
 });
 
-test('map counts and cross-index memberships agree, preserving all 42 unique papers', () => {
+test('map counts and cross-index memberships agree, preserving all 43 unique papers', () => {
   const unique = new Map();
   for (const category of categoryManifest) {
     const index = loadTs(`app/data/categories/${category.id}.ts`).papers;
@@ -55,12 +55,12 @@ test('map counts and cross-index memberships agree, preserving all 42 unique pap
       unique.set(paper.id, paper);
     }
   }
-  assert.equal(unique.size, 42);
+  assert.equal(unique.size, 43);
 });
 
-test('Share Control contains exactly the two user-selected classes and all 17 papers', () => {
+test('Share Control contains exactly the two user-selected classes and all 18 papers', () => {
   assert.deepEqual(sharedControlTopicIds, ['intent-fusion', 'human-model']);
-  assert.equal(sharedControlPapers.length, 17);
+  assert.equal(sharedControlPapers.length, 18);
   for (const paper of sharedControlPapers) {
     assert.ok(paper.sharedControlTopics.length > 0);
     assert.ok(paper.sharedControlTopics.every((topic) => sharedControlTopicIds.includes(topic)));

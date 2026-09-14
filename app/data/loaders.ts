@@ -11,6 +11,10 @@ const categoryLoaders: Record<CategoryId, () => Promise<PaperIndex[]>> = {
 };
 
 const detailLoaders: Record<string, () => Promise<PaperDetail>> = {
+  'wheelchair-bimanual-11217797': () =>
+    import('./details/wheelchair-bimanual-11217797').then(
+      (module) => module.detail,
+    ),
   'dexgen-2502-04307': () =>
     import('./details/dexgen-2502-04307').then((module) => module.detail),
   'online-human-constraints-2403-02974': () =>

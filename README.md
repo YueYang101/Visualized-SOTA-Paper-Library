@@ -21,7 +21,7 @@ Grasping 默认同时显示全部 21 篇论文，三个相交大圆分别为 **�
 
 ## 当前内容
 
-目前共收录 **42 篇**论文：3 篇已有精读记录，39 篇为待精读的论文预读与研究方案。“SOTA”是随时间变化的筛选判断，不代表永久排名。
+目前共收录 **43 篇**论文：3 篇已有精读记录，40 篇为待精读的论文预读与研究方案。“SOTA”是随时间变化的筛选判断，不代表永久排名。
 
 已有精读记录：
 
@@ -58,7 +58,9 @@ Grasping 默认同时显示全部 21 篇论文，三个相交大圆分别为 **�
 
 ## Share Control 双圆图（2026-09-13 按用户要求新增）
 
-Share Control 默认同时显示全部 17 篇论文，只保留 **意图融合（14）／Human Model（4）** 两类。两个大圆允许论文同时归属；Human Intent & Action Review 同属两类。
+Share Control 默认同时显示全部 18 篇论文，只保留 **意图融合（15）／Human Model（4）** 两类。两个大圆允许论文同时归属；Human Intent & Action Review 同属两类。
+
+新增 **Bimanual Wheelchair（IEEE RO-MAN 2025）**：Share Control → 意图融合，高优先级、待精读。正式题名为 [Toward Shared Control for Mobile Bimanual Manipulation on a Robotic Wheelchair](https://doi.org/10.1109/RO-MAN63969.2025.11217797)。已整理作者摘要、补充视频、分阶段控制流程、3 项定性实验及 4 条 Q&A；全文 PDF 未取得，仲裁公式、参数和实验数值仍待核验。
 
 新增 **DexterityGen（DexGen，RSS 2025）**：Share Control → 意图融合，按用户要求设为最高档 **极高（very-high）**，待精读。卡片记录 RL 生成数据 → diffusion 动作先验 → 逆动力学执行、人类采样引导及代码可用性边界，并关联 [Stage 1.3 共享抓取控制计划](https://yueyang101.github.io/Machine-Learning-Handbook/l20-stage1-3-shared-grasp.html)。
 
